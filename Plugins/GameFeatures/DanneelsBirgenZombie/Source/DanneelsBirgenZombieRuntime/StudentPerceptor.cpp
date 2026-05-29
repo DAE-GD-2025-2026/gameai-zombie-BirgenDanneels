@@ -54,6 +54,11 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	if (!Stimulus.WasSuccessfullySensed())
 	{
+		if (AHouse* House = Cast<AHouse>(Actor)) //house
+		{
+			Blackboard->SetValueAsObject(FName("TargetHouse"), House);
+			GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	FString::Printf(TEXT("Saw house!")));
 		}
 		return;
 	}
