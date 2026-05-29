@@ -26,6 +26,7 @@ public class DanneelsBirgenZombieRuntime : ModuleRules
 			new string[]
 			{
 				"Core",
+				"GameAI_Zombie",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -39,6 +40,8 @@ public class DanneelsBirgenZombieRuntime : ModuleRules
 				"Slate",
 				"SlateCore",
 				"AIModule",
+				"GameplayTasks",
+				"NavigationSystem"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
