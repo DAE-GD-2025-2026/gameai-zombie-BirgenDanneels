@@ -10,6 +10,8 @@
 #include "Perception/AISense_Damage.h"
 #include "StudentPerceptor.generated.h"
 
+class AHouse;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class DANNEELSBIRGENZOMBIERUNTIME_API UStudentPerceptor : public UActorComponent
 {
@@ -24,6 +26,11 @@ public:
 	UFUNCTION()
 	virtual void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
+	const TSet<TObjectPtr<AHouse>>& GetSeenHouses() const {return SeenHouses;}
+	const TSet<TObjectPtr<AHouse>>& GetVisitedHouses() const {return VisitedHouses;}
+	
+	void VisitHouse(AHouse* House);
+	
 private:
 	
 	UPROPERTY()
@@ -31,4 +38,9 @@ private:
 
 	UPROPERTY()
 	AAIController* OwnerController;
+	
+	UPROPERTY()
+	TSet<TObjectPtr<AHouse>> SeenHouses;
+	UPROPERTY()
+	TSet<TObjectPtr<AHouse>> VisitedHouses;
 };

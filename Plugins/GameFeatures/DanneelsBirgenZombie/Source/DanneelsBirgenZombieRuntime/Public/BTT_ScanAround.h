@@ -11,6 +11,11 @@ public:
 	UBTT_ScanAround();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, float deltaSeconds) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RotationTime{0.5f};
+	
 private:
+	
 	float TotalYaw;
 };

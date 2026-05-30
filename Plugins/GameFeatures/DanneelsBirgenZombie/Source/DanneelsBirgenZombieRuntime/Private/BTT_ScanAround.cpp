@@ -1,6 +1,8 @@
 ﻿#include "BTT_ScanAround.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
+#include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
+#include "Village/House/House.h"
 
 UBTT_ScanAround::UBTT_ScanAround()
 {
@@ -20,7 +22,7 @@ void UBTT_ScanAround::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, 
 	APawn* Pawn = root.GetAIOwner()->GetPawn();
 	FRotator Rot = Pawn->GetActorRotation();
 	
-	float YawStep = 180.f * deltaSeconds;
+	const float YawStep = (360.f / RotationTime) * deltaSeconds;
 	Rot.Yaw += YawStep;
 	Pawn->SetActorRotation(Rot);
 	
@@ -28,9 +30,6 @@ void UBTT_ScanAround::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, 
 	
 	if (TotalYaw >= 360.f)
 	{
-		UBlackboardComponent* Blackboard = root.GetAIOwner()->GetBlackboardComponent();
-		Blackboard->SetValueAsObject("TargetHouse", nullptr);
-		
 		FinishLatentTask(root, EBTNodeResult::Succeeded);
 	}
 }

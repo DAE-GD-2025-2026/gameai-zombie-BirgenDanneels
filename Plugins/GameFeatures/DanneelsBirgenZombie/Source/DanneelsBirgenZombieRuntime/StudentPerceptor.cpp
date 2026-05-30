@@ -54,12 +54,68 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	if (!Stimulus.WasSuccessfullySensed())
 	{
+	// 	if (APurgeZone * sensedPurgeZone = Cast<APurgeZone>(Actor))
+	// 	{
+	// 		Blackboard->SetValueAsObject(FName("TargetPurgeZone"),sensedPurgeZone);
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw purge!")));
+	// 	}
+		
+	// 	if ( ABaseZombie * SensedZombie = Cast<ABaseZombie>(Actor))
+	// 	{
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw zombie!")));
+	// 		Blackboard->SetValueAsObject(FName("x"), SensedZombie);
+	// 	}
+	// 	
+	// 	if (AFood* SensedFood = Cast<AFood>(Actor))
+	// 	{
+	// 		Blackboard->SetValueAsObject(FName("TargetFood"), SensedFood);
+	// 		Blackboard->SetValueAsObject(FName("TargetItem"), SensedFood);
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw food!")));
+	// 	}
+		
+	// 	if (AMedkit* SensedMedkit = Cast<AMedkit>(Actor))
+	// 	{
+	// 		Blackboard->SetValueAsObject(FName("TargetMedkit"), SensedMedkit);
+	// 		Blackboard->SetValueAsObject(FName("TargetItem"), SensedMedkit);
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw Medkit!")));
+	// 	}
+		
+	// 	if (APistol* SensedPistol = Cast<APistol>(Actor))//pistol
+	// 	{
+	// 		Blackboard->SetValueAsObject(FName("TargetPistol"), SensedPistol);
+	// 		Blackboard->SetValueAsObject(FName("TargetItem"), SensedPistol);
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw pistol!")));
+	// 	}
+		
+	// 	if (AShotgun* SensedShotGun = Cast<AShotgun>(Actor))//shotgun
+	// 	{
+	// 		Blackboard->SetValueAsObject(FName("TargetShotgun"), SensedShotGun);
+	// 		Blackboard->SetValueAsObject(FName("TargetItem"), SensedShotGun);
+	// 		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+	// FString::Printf(TEXT("Saw shotgun!")));
+	// 	}
+		
 		if (AHouse* House = Cast<AHouse>(Actor)) //house
 		{
-			Blackboard->SetValueAsObject(FName("TargetHouse"), House);
+			if (!SeenHouses.Contains(House))
+			{
+				SeenHouses.Add(House);
+			}
+			
 			GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
 	FString::Printf(TEXT("Saw house!")));
 		}
 		return;
 	}
+}
+
+void UStudentPerceptor::VisitHouse(AHouse* House)
+{
+	if (VisitedHouses.Contains(House)) return;
+	VisitedHouses.Add(House);
 }
