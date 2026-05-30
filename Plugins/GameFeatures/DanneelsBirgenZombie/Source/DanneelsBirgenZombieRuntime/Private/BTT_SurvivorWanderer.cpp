@@ -22,6 +22,7 @@ EBTNodeResult::Type UBTT_SurvivorWanderer::ExecuteTask(UBehaviorTreeComponent& r
 	if (!survivor) return EBTNodeResult::Failed;
 	
 	UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
+	if (!Blackboard) return EBTNodeResult::Failed;
 	
 	FNavLocation wanderLocation{};
 	

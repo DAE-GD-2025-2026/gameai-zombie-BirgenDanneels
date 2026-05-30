@@ -11,6 +11,7 @@
 #include "StudentPerceptor.generated.h"
 
 class AHouse;
+class ABaseItem;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class DANNEELSBIRGENZOMBIERUNTIME_API UStudentPerceptor : public UActorComponent
@@ -39,8 +40,13 @@ private:
 	UPROPERTY()
 	AAIController* OwnerController;
 	
+	
+	// Houses
 	UPROPERTY()
 	TSet<TObjectPtr<AHouse>> SeenHouses;
 	UPROPERTY()
 	TSet<TObjectPtr<AHouse>> VisitedHouses;
+	
+	// Loot
+	TSet<TObjectPtr<ABaseItem>> Loot;
 };

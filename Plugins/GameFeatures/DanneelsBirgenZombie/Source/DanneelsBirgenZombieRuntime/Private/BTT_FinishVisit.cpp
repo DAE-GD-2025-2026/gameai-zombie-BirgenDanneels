@@ -15,6 +15,8 @@ EBTNodeResult::Type UBTT_FinishVisit::ExecuteTask(UBehaviorTreeComponent& root, 
 	if (!Pawn) return EBTNodeResult::Failed;
 	
 	UBlackboardComponent* Blackboard = root.GetAIOwner()->GetBlackboardComponent();
+	if (!Blackboard) return EBTNodeResult::Failed;
+	
 	UStudentPerceptor* Perceptor = Pawn->FindComponentByClass<UStudentPerceptor>();
 	if (!Perceptor) return EBTNodeResult::Failed;
 		
