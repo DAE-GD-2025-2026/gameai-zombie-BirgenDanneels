@@ -22,30 +22,25 @@ void UBTS_SelectHouseTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* 
 
 	APawn* Pawn = AICon->GetPawn();
 	if (!Pawn) return;
-
-	// 1. Get your perceptor (adjust this to your setup)
+	
 	UStudentPerceptor* Perceptor = Pawn->FindComponentByClass<UStudentPerceptor>();
 	if (!Perceptor) return;
-
-	// 2. Get memory
+	
 	const TSet<TObjectPtr<AHouse>>& SeenHouses = Perceptor->GetSeenHouses();
 	const TSet<TObjectPtr<AHouse>>& VisitedHouses = Perceptor->GetVisitedHouses();
 	if (SeenHouses.Num() == 0) return;
+	
+	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
+	if (!Blackboard) return;
 
-	// 3. Blackboard
-	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-	if (!BB) return;
-
-	AHouse* CurrentTarget = Cast<AHouse>(BB->GetValueAsObject("TargetHouse"));
-
-	// 4. Pick a new house
+	// Pick a closest house
 	AHouse* NewTarget = nullptr;
 
 	float BestDist = FLT_MAX;
 
 	for (AHouse* House : SeenHouses)
 	{
-		if (!House || House == CurrentTarget) continue;
+		if (!House) continue;
 
 		if (VisitedHouses.Contains(House)) continue;
 		
@@ -58,8 +53,6 @@ void UBTS_SelectHouseTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* 
 		}
 	}
 
-	if (!NewTarget) return;
-
 	// 5. Set blackboard
-	BB->SetValueAsObject("TargetHouse", NewTarget);
+	Blackboard->SetValueAsObject("TargetHouse", NewTarget);
 }

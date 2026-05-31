@@ -24,8 +24,31 @@ EBTNodeResult::Type UBTT_FinishVisit::ExecuteTask(UBehaviorTreeComponent& root, 
 	if (!House) return EBTNodeResult::Failed;
 		
 	Perceptor->VisitHouse(House);
-	Blackboard->SetValueAsObject("TargetHouse", nullptr);
 
+	// Look For next possible house
+	const TSet<TObjectPtr<AHouse>>& SeenHouses = Perceptor->GetSeenHouses();
+	const TSet<TObjectPtr<AHouse>>& VisitedHouses = Perceptor->GetVisitedHouses();
+	AHouse* NewTarget = nullptr;
+
+	float BestDist = FLT_MAX;
+
+	for (AHouse* TempHouse : SeenHouses)
+	{
+		if (!TempHouse) continue;
+
+		if (VisitedHouses.Contains(TempHouse)) continue;
+		
+		float Dist = FVector::Dist(Pawn->GetActorLocation(), TempHouse->GetActorLocation());
+
+		if (Dist < BestDist)
+		{
+			BestDist = Dist;
+			NewTarget = TempHouse;
+		}
+	}
+
+	
+	Blackboard->SetValueAsObject("TargetHouse", NewTarget);
 	
 	return EBTNodeResult::Succeeded;
 }

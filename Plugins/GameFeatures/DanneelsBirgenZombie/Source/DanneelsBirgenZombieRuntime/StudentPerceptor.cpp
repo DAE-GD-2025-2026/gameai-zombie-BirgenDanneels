@@ -78,10 +78,10 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 			if (!SeenHouses.Contains(House))
 			{
 				SeenHouses.Add(House);
+				
+				GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
+FString::Printf(TEXT("Saw house!")));
 			}
-			
-			GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
-	FString::Printf(TEXT("Saw house!")));
 		}
 		return;
 	}
