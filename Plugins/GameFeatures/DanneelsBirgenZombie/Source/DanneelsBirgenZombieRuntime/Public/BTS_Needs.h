@@ -4,6 +4,7 @@
 #include "BTS_Needs.generated.h"
 
 class ASurvivorPawn;
+enum class EItemType : uint8;
 
 UCLASS()
 class DANNEELSBIRGENZOMBIERUNTIME_API UBTS_Needs : public UBTService
@@ -14,7 +15,10 @@ public:
 	virtual void TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory, float deltaSeconds) override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int AmmoNeedThreshold = 0;
+	int ShotgunNeedThreshold = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PistolNeedThreshold = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int MedkitNeedThreshold = 1;
@@ -30,7 +34,7 @@ public:
 	
 private:
 	
-	float GetAmmoNeed(ASurvivorPawn* Survivor);
+	int GetWeaponNeed(ASurvivorPawn* Survivor, EItemType WeaponType);
 	int GetMedkitNeed(ASurvivorPawn* Survivor);
 	int GetFoodNeed(ASurvivorPawn* Survivor);
 };

@@ -9,6 +9,8 @@ UBTT_RememberItem::UBTT_RememberItem()
 	NodeName = "Remember Item";
 }
 
+//TODO: This should be a service
+
 EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
 {
 	UBlackboardComponent* Blackboard = root.GetAIOwner()->GetBlackboardComponent();
@@ -22,17 +24,30 @@ EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root,
 	
 	Perceptor->CleanUpSeenLoot();
 	
-	int AmmoNeed = Blackboard->GetValueAsInt("AmmoStockNeed");
+	int PistoldNeed = Blackboard->GetValueAsInt("PistolNeed");
+	int ShotgunNeed = Blackboard->GetValueAsInt("ShotgunNeed");
 	int MedkitNeed = Blackboard->GetValueAsInt("MedkitStockNeed");
 	int FoodNeed = Blackboard->GetValueAsInt("FoodStockNeed");
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("AmmoNeed: %d, MedkitNeed: %d, FoodNeed: %d"), AmmoNeed, MedkitNeed, FoodNeed));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("PistolNeed: %d, ShotgunNeed: %d, MedkitNeed: %d, FoodNeed: %d"), PistoldNeed, ShotgunNeed, MedkitNeed, FoodNeed));
 	
 	const TObjectPtr<ABaseItem>* TargetItem = nullptr;
+	
+	//TODO: Should be done by distance but this just finds the first item of said category in the array right now
 	
 	for (const auto& Item : Perceptor->GetSeenLoot())
 	{
 		// Implement weapon finding
-		if (MedkitNeed > 0 && Item->GetItemType() == EItemType::Medkit)
+		if (PistoldNeed > 0 && Item->GetItemType() == EItemType::Pistol)
+		{
+			TargetItem = &Item;
+			 break;
+		}
+		else if (ShotgunNeed > 0 && Item->GetItemType() == EItemType::Shotgun)
+		{
+			TargetItem = &Item;
+			 break;
+		}
+		else if (MedkitNeed > 0 && Item->GetItemType() == EItemType::Medkit)
 		{
 			TargetItem = &Item;
 			break;
