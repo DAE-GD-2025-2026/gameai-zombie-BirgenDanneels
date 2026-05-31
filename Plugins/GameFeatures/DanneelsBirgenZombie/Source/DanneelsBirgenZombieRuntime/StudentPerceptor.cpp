@@ -3,11 +3,13 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "AIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Zombies/BaseZombie.h"
 #include "Items/Food.h"
 #include "Items/Medkit.h"
 #include "Items/Pistol.h"
 #include "Items/Shotgun.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "PurgeZones/PurgeZone.h"
 #include "Village/House/House.h"
 
@@ -56,6 +58,9 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	{
 		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
 		{
+			// Target zombie should be set by a service
+			Blackboard->SetValueAsObject("TargetZombie", Zombie);
+			
 			if (!ZombiesInVision.Contains(Zombie))
 			{
 				ZombiesInVision.Add(Zombie);

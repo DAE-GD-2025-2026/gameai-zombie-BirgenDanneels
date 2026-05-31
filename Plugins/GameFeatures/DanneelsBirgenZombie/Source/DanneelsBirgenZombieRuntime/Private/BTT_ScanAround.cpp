@@ -1,8 +1,6 @@
 ﻿#include "BTT_ScanAround.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
-#include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
-#include "Village/House/House.h"
 
 UBTT_ScanAround::UBTT_ScanAround()
 {
