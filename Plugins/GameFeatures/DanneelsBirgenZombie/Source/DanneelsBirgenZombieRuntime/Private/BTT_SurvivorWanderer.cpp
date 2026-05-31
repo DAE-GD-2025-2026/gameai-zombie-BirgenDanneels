@@ -7,6 +7,8 @@
 #include "NavigationSystem.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
 
 UBTT_SurvivorWanderer::UBTT_SurvivorWanderer()
 {
@@ -24,15 +26,26 @@ EBTNodeResult::Type UBTT_SurvivorWanderer::ExecuteTask(UBehaviorTreeComponent& r
 	UBlackboardComponent* Blackboard = AIController->GetBlackboardComponent();
 	if (!Blackboard) return EBTNodeResult::Failed;
 	
-	FNavLocation wanderLocation{};
+	//Temp
+	UStudentPerceptor* Perceptor = survivor->FindComponentByClass<UStudentPerceptor>();
 	
-	
-	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	if (!NavSys) return EBTNodeResult::Failed;
-	
-	NavSys->GetRandomReachablePointInRadius(survivor->GetActorLocation(), WanderRadius, wanderLocation);
-	
-	Blackboard->SetValueAsVector("WanderLocation", wanderLocation.Location);
+	FEnvQueryRequest Request = FEnvQueryRequest(WanderQuery, AIController->GetPawn());
+
+	Request.Execute(
+	EEnvQueryRunMode::RandomBest5Pct,
+	FQueryFinishedSignature::CreateLambda(
+		[Blackboard, Perceptor](TSharedPtr<FEnvQueryResult> Result)
+		{
+			if (!Result.IsValid() || !Result->IsSuccessful())
+				return;
+
+			FVector Location = Result->GetItemAsLocation(0);
+			Blackboard->SetValueAsVector(TEXT("WanderLocation"), Location);
+			Perceptor->AddVisitedLocation(Location);
+			
+		}
+		)
+	);
 	
 	return EBTNodeResult::Succeeded;
 }

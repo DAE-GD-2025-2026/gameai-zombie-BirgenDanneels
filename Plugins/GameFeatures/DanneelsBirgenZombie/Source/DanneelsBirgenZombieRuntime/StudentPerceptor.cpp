@@ -100,6 +100,16 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	}
 }
 
+void UStudentPerceptor::AddVisitedLocation(const FVector& Location)
+{
+	if (RecentlyVisited.Num() > 10)
+	{
+		RecentlyVisited.RemoveAt(0);
+	}
+	
+	RecentlyVisited.Add(Location);
+}
+
 void UStudentPerceptor::VisitHouse(AHouse* House)
 {
 	if (VisitedHouses.Contains(House)) return;

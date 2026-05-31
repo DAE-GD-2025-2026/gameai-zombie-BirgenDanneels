@@ -35,6 +35,9 @@ public:
 	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesInVision() const {return ZombiesInVision;}
 	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesSeen() const {return ZombiesSeen;}
 	
+	const TArray<FVector>& GetRecentlyVisited() const {return RecentlyVisited;}
+	void AddVisitedLocation(const FVector& Location);
+	
 	void VisitHouse(AHouse* House);
 	void CleanUpSeenLoot();
 	
@@ -61,4 +64,7 @@ private:
 	TSet<TObjectPtr<ABaseZombie>> ZombiesInVision;
 	UPROPERTY()
 	TSet<TObjectPtr<ABaseZombie>> ZombiesSeen;
+	
+	// Visited Locations (make a task that adds to these locations, cap them and if cap is reached start removing the oldest ones)
+	TArray<FVector> RecentlyVisited;
 };

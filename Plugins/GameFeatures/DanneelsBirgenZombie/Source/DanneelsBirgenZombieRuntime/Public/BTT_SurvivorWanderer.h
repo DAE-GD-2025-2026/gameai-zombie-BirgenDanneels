@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "EnvironmentQuery/EnvQuery.h"
 #include "BTT_SurvivorWanderer.generated.h"
 
 /**
@@ -16,9 +17,12 @@ class DANNEELSBIRGENZOMBIERUNTIME_API UBTT_SurvivorWanderer : public UBTTaskNode
 public:
 	UBTT_SurvivorWanderer();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
+
+protected:
 	
+	UPROPERTY(EditAnywhere)
+	UEnvQuery* WanderQuery;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WanderRadius{100.0f};
+	FTimerHandle TimerHandle;
 	
 };
