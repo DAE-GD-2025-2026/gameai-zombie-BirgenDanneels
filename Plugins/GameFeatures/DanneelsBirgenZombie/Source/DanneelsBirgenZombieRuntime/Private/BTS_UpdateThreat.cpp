@@ -47,6 +47,7 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 
 	if (ClosestZombie)
 	{
+		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Red,"Closest Zombie found" );
 		Blackboard->SetValueAsObject("ClosestZombie", ClosestZombie);
 		Blackboard->SetValueAsFloat("ZombieDistance", FMath::Sqrt(ClosestDistSq));
 	}
@@ -64,7 +65,7 @@ ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(const TSet<TObjectPtr<ABaseZom
 
 	for (ABaseZombie* Zombie : Zombies)
 	{
-		if (!Zombie) continue;
+		if (!Zombie || !(IsValid(Zombie))) continue;
 
 		const float DistSq =
 			FVector::DistSquared(MyLocation, Zombie->GetActorLocation());

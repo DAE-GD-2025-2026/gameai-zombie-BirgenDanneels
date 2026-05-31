@@ -19,28 +19,14 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 
 	ASurvivorPawn* Survivor = Cast<ASurvivorPawn>(AIController->GetPawn());
 	if (!Survivor) return EBTNodeResult::Failed;
-	
+
 	UBlackboardComponent* Blackboard = root.GetBlackboardComponent();
 	if (!Blackboard) return EBTNodeResult::Failed;
 	
-	ABaseItem* Weapon = nullptr;
-	// Equip gun (select gun, should be done by another task or service)
-	// For now just equip first gun in inventory
-	//Implement pickup range
-	const TArray<ABaseItem*>& InventoryArray = Survivor->GetComponentByClass<UInventoryComponent>()->GetInventory();
-	
-	for (ABaseItem* Item : InventoryArray)
-	{
-		if (!Item) continue;
-		
-		if (Item->GetItemType() == EItemType::Shotgun || Item->GetItemType() == EItemType::Pistol)
-		{
-			Weapon = Item;
-			break;
-		}
-	}
-	
+	ABaseItem* Weapon = Cast<ABaseItem>(Blackboard->GetValueAsObject("EquipedWeapon"));
 	if (!Weapon) return EBTNodeResult::Failed;
+	
+	const TArray<ABaseItem*>& InventoryArray = Survivor->GetComponentByClass<UInventoryComponent>()->GetInventory();
 	
 	// Aim at target
 	ABaseZombie* Target = Cast<ABaseZombie>(Blackboard->GetValueAsObject("TargetZombie"));
@@ -50,9 +36,9 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 	const FVector TargetLocation = Target->GetActorLocation();
 	const FVector PawnLocation = Survivor->GetActorLocation();
 
-	// Aim direction (flat or full 3D depending on your game)
+	// Aim direction
 	FVector AimDir = TargetLocation - PawnLocation;
-	AimDir.Z = 0.f; // remove this if you want vertical aiming
+	AimDir.Z = 0.f;
 
 	AimDir = AimDir.GetSafeNormal();
 
@@ -67,14 +53,28 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 	// Apply rotation
 	Survivor->SetActorRotation(DesiredRotation);
 	
-	
 	// Shoot
 	Weapon->UseItem(*Survivor);
+	
+	int SlotIdx = GetItemSlot(InventoryArray, Weapon);
+	if (Weapon->GetValue() <= 0)
+	{
+		Survivor->GetComponentByClass<UInventoryComponent>()->RemoveItem(SlotIdx);
+	}
 	
 	return EBTNodeResult::Succeeded;
 }
 
-EBTNodeResult::Type UBTT_Shoot::AbortTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
+int UBTT_Shoot::GetItemSlot(const TArray<ABaseItem*>& Inventory, ABaseItem* SlotItem) const
 {
-	return Super::AbortTask(root, nodeMemory);
+	int SlotIdx = -1;
+	
+	for (ABaseItem* Item : Inventory)
+	{
+		++ SlotIdx;
+		if (Item == SlotItem)
+			return SlotIdx;
+	}
+	
+	return -1;
 }
