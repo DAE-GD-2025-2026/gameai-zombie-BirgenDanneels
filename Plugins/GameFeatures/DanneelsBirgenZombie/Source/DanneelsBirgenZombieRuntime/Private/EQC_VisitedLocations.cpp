@@ -11,11 +11,11 @@ void UEnvQueryContext_VisitedLocations::ProvideContext(
 {
 	const AActor* QueryOwner = Cast<AActor>(QueryInstance.Owner.Get());
 	if (!QueryOwner) return;
-
-	const AAIController* AI = Cast<AAIController>(QueryOwner->GetInstigatorController());
-	if (!AI) return;
-
-	const UStudentPerceptor* Comp = AI->FindComponentByClass<UStudentPerceptor>();
+	
+	const APawn* QueryPawn = Cast<APawn>(QueryOwner);
+	if (!QueryPawn) return;
+	
+	const UStudentPerceptor* Comp = QueryPawn->FindComponentByClass<UStudentPerceptor>();
 	if (!Comp) return;
 
 	UEnvQueryItemType_Point::SetContextHelper(ContextData, Comp->GetRecentlyVisited());
