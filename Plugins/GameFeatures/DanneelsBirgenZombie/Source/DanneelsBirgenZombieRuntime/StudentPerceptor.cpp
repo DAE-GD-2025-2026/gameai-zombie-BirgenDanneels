@@ -54,13 +54,22 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
+		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
+		{
+			if (!ZombiesInVision.Contains(Zombie))
+			{
+				ZombiesInVision.Add(Zombie);
+			}
+			
+			ZombiesSeen.Add(Zombie);
+		}
+		
 	
 		if (ABaseItem* Item = Cast<ABaseItem>(Actor))
 		{
-			if (Item->GetItemType() != EItemType::Garbage && Blackboard->GetValueAsObject(FName("TargetItem")) == nullptr)
+			if (Item->GetItemType() != EItemType::Garbage)
 			{
-				Blackboard->SetValueAsObject(FName("TargetItem"), Item);
-				Blackboard->SetValueAsVector(FName("ItemLocation"), Item->GetActorLocation());
+				SeenLoot.Add(Item);
 			}
 		}
 		
@@ -78,6 +87,9 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	}
 	else
 	{
+		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
+			ZombiesInVision.Remove(Zombie);
+		
 		 // if (ABaseItem* Item = Cast<ABaseItem>(Actor))
 		 // {
 		 // 	if (Item == Blackboard->GetValueAsObject(FName("TargetItem")))
@@ -92,4 +104,17 @@ void UStudentPerceptor::VisitHouse(AHouse* House)
 {
 	if (VisitedHouses.Contains(House)) return;
 	VisitedHouses.Add(House);
+}
+
+void UStudentPerceptor::CleanUpSeenLoot()
+{
+	for (auto It = SeenLoot.CreateIterator(); It; ++It)
+	{
+		ABaseItem* Item = *It;
+
+		if (!IsValid(Item) || Item->IsHidden())
+		{
+			It.RemoveCurrent();
+		}
+	}
 }

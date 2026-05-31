@@ -12,6 +12,7 @@
 
 class AHouse;
 class ABaseItem;
+class ABaseZombie;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class DANNEELSBIRGENZOMBIERUNTIME_API UStudentPerceptor : public UActorComponent
@@ -29,8 +30,13 @@ public:
 	
 	const TSet<TObjectPtr<AHouse>>& GetSeenHouses() const {return SeenHouses;}
 	const TSet<TObjectPtr<AHouse>>& GetVisitedHouses() const {return VisitedHouses;}
+	const TSet<TObjectPtr<ABaseItem>>& GetSeenLoot() const {return SeenLoot;}
+	
+	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesInVision() const {return ZombiesInVision;}
+	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesSeen() const {return ZombiesSeen;}
 	
 	void VisitHouse(AHouse* House);
+	void CleanUpSeenLoot();
 	
 private:
 	
@@ -48,5 +54,11 @@ private:
 	TSet<TObjectPtr<AHouse>> VisitedHouses;
 	
 	// Loot
-	TSet<TObjectPtr<ABaseItem>> Loot;
+	TSet<TObjectPtr<ABaseItem>> SeenLoot;
+	
+	// Zombies
+	UPROPERTY()
+	TSet<TObjectPtr<ABaseZombie>> ZombiesInVision;
+	UPROPERTY()
+	TSet<TObjectPtr<ABaseZombie>> ZombiesSeen;
 };
