@@ -11,4 +11,9 @@ public:
 	
 	UBTT_RememberItem();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
+
+protected:
+	
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector ItemLocationKey;
 };

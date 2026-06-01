@@ -31,38 +31,41 @@ EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root,
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("PistolNeed: %d, ShotgunNeed: %d, MedkitNeed: %d, FoodNeed: %d"), PistoldNeed, ShotgunNeed, MedkitNeed, FoodNeed));
 	
 	const TObjectPtr<ABaseItem>* TargetItem = nullptr;
-	
-	//TODO: Should be done by distance but this just finds the first item of said category in the array right now
+	float Distance = TNumericLimits<float>::Max();
 	
 	for (const auto& Item : Perceptor->GetSeenLoot())
 	{
-		// Implement weapon finding
-		if (PistoldNeed > 0 && Item->GetItemType() == EItemType::Pistol)
+		bool FitsNeeds = (PistoldNeed > 0 && Item->GetItemType() == EItemType::Pistol) 
+		|| ShotgunNeed > 0 && Item->GetItemType() == EItemType::Shotgun 
+		|| MedkitNeed > 0 && Item->GetItemType() == EItemType::Medkit 
+		|| FoodNeed > 0 && Item->GetItemType() == EItemType::Food;
+		
+		if (FitsNeeds)
 		{
-			TargetItem = &Item;
-			 break;
-		}
-		else if (ShotgunNeed > 0 && Item->GetItemType() == EItemType::Shotgun)
-		{
-			TargetItem = &Item;
-			 break;
-		}
-		else if (MedkitNeed > 0 && Item->GetItemType() == EItemType::Medkit)
-		{
-			TargetItem = &Item;
-			break;
-		}
-		else if (FoodNeed > 0 && Item->GetItemType() == EItemType::Food)
-		{
-			TargetItem = &Item;
-			break;
+			float ItemDistance = (Pawn->GetActorLocation() - Item->GetActorLocation()).Size();
+			if (ItemDistance < Distance)
+			{
+				TargetItem = &Item;
+				Distance = ItemDistance;
+			}
 		}
 	}
 	
 	if (TargetItem)
 	{
+		DrawDebugSphere(
+	GetWorld(),          // Current world context
+	TargetItem->Get()->GetActorLocation(),        // The coordinate vector you just saved
+	50.0f,               // Radius of the sphere
+	12,                  // Segments (smoothness of the sphere)
+	FColor::Green,       // Color of the shape
+	false,               // Persistent lines (false = temporary)
+	2.0f,                // Lifetime in seconds (how long it stays visible)
+	0,                   // Depth priority
+	2.0f                 // Thickness of the lines
+);
 		Blackboard->SetValueAsObject("TargetItem", *TargetItem);
-		Blackboard->SetValueAsVector("ItemLocation", TargetItem->Get()->GetActorLocation());
+		Blackboard->SetValueAsVector(ItemLocationKey.SelectedKeyName, TargetItem->Get()->GetActorLocation());
 		return EBTNodeResult::Succeeded;
 	}
 	

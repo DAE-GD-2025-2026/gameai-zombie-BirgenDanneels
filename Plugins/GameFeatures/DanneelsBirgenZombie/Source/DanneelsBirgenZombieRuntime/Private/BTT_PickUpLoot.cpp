@@ -22,9 +22,16 @@ EBTNodeResult::Type UBTT_PickUpLoot::ExecuteTask(UBehaviorTreeComponent& root, u
 	if (!Blackboard) return EBTNodeResult::Failed;
 	
 	ABaseItem* TargetItem = Cast<ABaseItem>(Blackboard->GetValueAsObject("TargetItem"));
+	if (!TargetItem) return EBTNodeResult::Failed;
 	
-	//Implement pickup range
-	const TArray<ABaseItem*>& InventoryArray = Survivor->GetComponentByClass<UInventoryComponent>()->GetInventory();
+	UInventoryComponent* Inventory = Survivor->GetComponentByClass<UInventoryComponent>();
+	if (!Inventory) return EBTNodeResult::Failed;
+	
+	const float DistanceToItem = (TargetItem->GetActorLocation() - Survivor->GetActorLocation()).Size();
+	if (DistanceToItem > Inventory->GetPickupRange())
+		return EBTNodeResult::Failed;
+	
+	const TArray<ABaseItem*>& InventoryArray = Inventory->GetInventory();
 	int TargetFreeSlot = GetFreeInventorySlot(InventoryArray);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("TargetFreeSlot: %d"), TargetFreeSlot));
