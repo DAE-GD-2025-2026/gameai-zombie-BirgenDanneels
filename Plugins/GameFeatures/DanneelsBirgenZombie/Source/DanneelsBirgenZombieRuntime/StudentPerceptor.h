@@ -24,6 +24,8 @@ public:
 	UStudentPerceptor();
 	
 	virtual void BeginPlay() override;
+	
+	virtual void TickComponent(float DeltaTime,	ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION()
 	virtual void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
@@ -32,7 +34,6 @@ public:
 	const TSet<TObjectPtr<AHouse>>& GetVisitedHouses() const {return VisitedHouses;}
 	const TSet<TObjectPtr<ABaseItem>>& GetSeenLoot() const {return SeenLoot;}
 	
-	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesInVision() const {return ZombiesInVision;}
 	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesSeen() const {return ZombiesSeen;}
 	
 	const TArray<FVector>& GetRecentlyVisited() const {return RecentlyVisited;}
@@ -61,9 +62,15 @@ private:
 	
 	// Zombies
 	UPROPERTY()
-	TSet<TObjectPtr<ABaseZombie>> ZombiesInVision;
-	UPROPERTY()
 	TSet<TObjectPtr<ABaseZombie>> ZombiesSeen;
+	
+	void CleanUpSeenZombies();
+
+	UPROPERTY()
+	float ZombieMemoryTime = 5.0f;
+
+	UPROPERTY()
+	TMap<TObjectPtr<ABaseZombie>, float> ZombieLastSeenTimes;
 	
 	// Visited Locations (make a task that adds to these locations, cap them and if cap is reached start removing the oldest ones)
 	TArray<FVector> RecentlyVisited;

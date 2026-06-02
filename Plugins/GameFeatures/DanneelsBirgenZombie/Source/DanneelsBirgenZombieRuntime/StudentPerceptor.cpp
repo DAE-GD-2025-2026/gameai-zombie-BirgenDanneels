@@ -58,17 +58,13 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	{
 		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
 		{
-			// Target zombie should be set by a service
-			Blackboard->SetValueAsObject("TargetZombie", Zombie);
-			
-			if (!ZombiesInVision.Contains(Zombie))
-			{
-				ZombiesInVision.Add(Zombie);
-			}
-			
 			ZombiesSeen.Add(Zombie);
+
+			if (GetWorld())
+			{
+				ZombieLastSeenTimes.Add(Zombie, GetWorld()->GetTimeSeconds());
+			}
 		}
-		
 	
 		if (ABaseItem* Item = Cast<ABaseItem>(Actor))
 		{
@@ -92,9 +88,6 @@ FString::Printf(TEXT("Saw house!")));
 	}
 	else
 	{
-		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
-			ZombiesInVision.Remove(Zombie);
-		
 		 // if (ABaseItem* Item = Cast<ABaseItem>(Actor))
 		 // {
 		 // 	if (Item == Blackboard->GetValueAsObject(FName("TargetItem")))
@@ -103,6 +96,13 @@ FString::Printf(TEXT("Saw house!")));
 		 // 	}
 		 // }
 	}
+}
+
+void UStudentPerceptor::TickComponent(float DeltaTime, ELevelTick TickType,	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	CleanUpSeenZombies();
 }
 
 void UStudentPerceptor::AddVisitedLocation(const FVector& Location)
@@ -130,6 +130,33 @@ void UStudentPerceptor::CleanUpSeenLoot()
 		if (!IsValid(Item) || Item->IsHidden())
 		{
 			It.RemoveCurrent();
+		}
+	}
+}
+
+void UStudentPerceptor::CleanUpSeenZombies()
+{
+	if (!GetWorld()) return;
+
+	const float Now = GetWorld()->GetTimeSeconds();
+
+	for (auto It = ZombiesSeen.CreateIterator(); It; ++It)
+	{
+		ABaseZombie* Zombie = *It;
+
+		if (!IsValid(Zombie))
+		{
+			It.RemoveCurrent();
+			ZombieLastSeenTimes.Remove(Zombie);
+			continue;
+		}
+
+		const float* LastSeenTime = ZombieLastSeenTimes.Find(Zombie);
+
+		if (!LastSeenTime || Now - *LastSeenTime > ZombieMemoryTime)
+		{
+			It.RemoveCurrent();
+			ZombieLastSeenTimes.Remove(Zombie);
 		}
 	}
 }

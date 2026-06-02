@@ -11,7 +11,13 @@ class DANNEELSBIRGENZOMBIERUNTIME_API UBTT_Shoot: public UBTTaskNode
 public:
 	UBTT_Shoot();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
-	//virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
+	
+protected:
+	
+	UPROPERTY(EditAnywhere)
+	FBlackboardKeySelector TargetKey;
+	UPROPERTY(EditAnywhere)
+	FBlackboardKeySelector WeaponKey;
 	
 private:
 	

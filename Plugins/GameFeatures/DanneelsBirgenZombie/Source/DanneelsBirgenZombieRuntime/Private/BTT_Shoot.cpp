@@ -23,13 +23,13 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 	UBlackboardComponent* Blackboard = root.GetBlackboardComponent();
 	if (!Blackboard) return EBTNodeResult::Failed;
 	
-	ABaseItem* Weapon = Cast<ABaseItem>(Blackboard->GetValueAsObject("EquipedWeapon"));
+	ABaseItem* Weapon = Cast<ABaseItem>(Blackboard->GetValueAsObject(WeaponKey.SelectedKeyName));
 	if (!Weapon) return EBTNodeResult::Failed;
 	
 	const TArray<ABaseItem*>& InventoryArray = Survivor->GetComponentByClass<UInventoryComponent>()->GetInventory();
 	
 	// Aim at target
-	ABaseZombie* Target = Cast<ABaseZombie>(Blackboard->GetValueAsObject("TargetZombie"));
+	ABaseZombie* Target = Cast<ABaseZombie>(Blackboard->GetValueAsObject(TargetKey.SelectedKeyName));
 	if (!Target) return EBTNodeResult::Failed;
 	
 	// Get positions
