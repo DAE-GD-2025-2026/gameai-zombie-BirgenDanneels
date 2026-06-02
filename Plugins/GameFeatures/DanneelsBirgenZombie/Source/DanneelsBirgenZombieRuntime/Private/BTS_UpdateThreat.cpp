@@ -4,21 +4,26 @@
 #include "GameFramework/Pawn.h"
 #include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
 #include "Zombies/BaseZombie.h"
+#include "Survivor/SurvivorPawn.h"
 
 UBTS_UpdateThreat::UBTS_UpdateThreat()
 {
 	NodeName = "Threat Detection";
-	Interval = 0.25f;        // performance-friendly
-	RandomDeviation = 0.05f; // avoids sync spikes
+	Interval = 0.25f;
+	RandomDeviation = 0.05f;
 }
 
 void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory, float deltaSeconds)
 {
+	Super::TickNode(root, nodeMemory, deltaSeconds);
+
 	AAIController* AIController = root.GetAIOwner();
 	if (!AIController) return;
 
 	APawn* Pawn = AIController->GetPawn();
 	if (!Pawn) return;
+
+	ASurvivorPawn* Survivor = Cast<ASurvivorPawn>(Pawn);
 
 	UBlackboardComponent* Blackboard = root.GetBlackboardComponent();
 	if (!Blackboard) return;
@@ -28,47 +33,100 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 	{
 		Blackboard->SetValueAsBool("ShouldFlee", false);
 		Blackboard->ClearValue("ClosestZombie");
+		Blackboard->ClearValue("ZombieDistance");
+
+		if (Survivor && Survivor->IsRunning())
+		{
+			Survivor->StopRunning();
+		}
+
 		return;
 	}
 
 	const FVector MyLocation = Pawn->GetActorLocation();
-
-	const TSet<TObjectPtr<ABaseZombie>>& Zombies = Perceptor->GetZombiesSeen();
 	
-	// Find Closest Zombie
+	const TSet<TObjectPtr<ABaseZombie>>& Zombies = Perceptor->GetZombiesSeen();
+
 	float ClosestDistSq = TNumericLimits<float>::Max();
 	ABaseZombie* ClosestZombie = FindClosestZombie(Zombies, MyLocation, ClosestDistSq);
-	
-	// Decide fleeing
-	bool ShouldFlee = (ClosestZombie && ClosestDistSq <= FMath::Square(DangerRadius));
 
-	// Write to Blackboard
-	Blackboard->SetValueAsBool("ShouldFlee", ShouldFlee);
-
-	if (ClosestZombie)
+	if (!ClosestZombie)
 	{
-		GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Red,"Closest Zombie found" );
-		Blackboard->SetValueAsObject("ClosestZombie", ClosestZombie);
-		Blackboard->SetValueAsFloat("ZombieDistance", FMath::Sqrt(ClosestDistSq));
-	}
-	else
-	{
+		Blackboard->SetValueAsBool("ShouldFlee", false);
 		Blackboard->ClearValue("ClosestZombie");
 		Blackboard->ClearValue("ZombieDistance");
+
+		if (Survivor && Survivor->IsRunning())
+		{
+			Survivor->StopRunning();
+		}
+
+		return;
+	}
+
+	const float ZombieDistance = FMath::Sqrt(ClosestDistSq);
+
+	Blackboard->SetValueAsObject("ClosestZombie", ClosestZombie);
+	Blackboard->SetValueAsFloat("ZombieDistance", ZombieDistance);
+	
+	// Flee state
+	const bool bShouldFlee = ZombieDistance <= DangerRadius;
+	Blackboard->SetValueAsBool("ShouldFlee", bShouldFlee);
+	
+	// Sprint state
+	if (Survivor)
+	{
+		if (ZombieDistance <= StartSprintRadius)
+		{
+			if (!Survivor->IsRunning())
+			{
+				Survivor->StartRunning();
+			}
+		}
+		else if (ZombieDistance >= StopSprintRadius)
+		{
+			if (Survivor->IsRunning())
+			{
+				Survivor->StopRunning();
+			}
+		}
+	}
+
+	if (GEngine)
+	{
+		const FString DebugText = FString::Printf(
+			TEXT("Zombie Dist: %.0f | Flee: %s | Running: %s"),
+			ZombieDistance,
+			bShouldFlee ? TEXT("true") : TEXT("false"),
+			Survivor && Survivor->IsRunning() ? TEXT("true") : TEXT("false")
+		);
+
+		GEngine->AddOnScreenDebugMessage(
+			5,
+			0.25f,
+			bShouldFlee ? FColor::Red : FColor::Yellow,
+			DebugText
+		);
 	}
 }
 
-ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(const TSet<TObjectPtr<ABaseZombie>>& Zombies, const FVector& MyLocation, float& OutDistSq)
+ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(
+	const TSet<TObjectPtr<ABaseZombie>>& Zombies,
+	const FVector& MyLocation,
+	float& OutDistSq
+)
 {
 	ABaseZombie* Closest = nullptr;
 	OutDistSq = TNumericLimits<float>::Max();
 
 	for (ABaseZombie* Zombie : Zombies)
 	{
-		if (!Zombie || !(IsValid(Zombie))) continue;
+		if (!IsValid(Zombie)) continue;
 
-		const float DistSq =
-			FVector::DistSquared(MyLocation, Zombie->GetActorLocation());
+		const float DistSq = FVector::DistSquared(
+			MyLocation,
+			Zombie->GetActorLocation()
+		);
 
 		if (DistSq < OutDistSq)
 		{

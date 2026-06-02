@@ -24,7 +24,10 @@ private:
 	float DangerRadius = 1500.f;
 
 	UPROPERTY(EditAnywhere, Category="Threat")
-	float LoseInterestRadius = 2000.f;
+	float StartSprintRadius = 900.f;
+	
+	UPROPERTY(EditAnywhere, Category="Threat")
+	float StopSprintRadius = 1300.f;
 
 	static ABaseZombie* FindClosestZombie(const TSet<TObjectPtr<ABaseZombie>>& Zombies, const FVector& MyLocation, float& OutDistSq);
 };
