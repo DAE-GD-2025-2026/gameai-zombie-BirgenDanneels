@@ -30,8 +30,6 @@ public:
 	UFUNCTION()
 	virtual void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
-	const TSet<TObjectPtr<AHouse>>& GetSeenHouses() const {return SeenHouses;}
-	const TSet<TObjectPtr<AHouse>>& GetVisitedHouses() const {return VisitedHouses;}
 	const TSet<TObjectPtr<ABaseItem>>& GetSeenLoot() const {return SeenLoot;}
 	
 	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesSeen() const {return ZombiesSeen;}
@@ -39,8 +37,12 @@ public:
 	const TArray<FVector>& GetRecentlyVisited() const {return RecentlyVisited;}
 	void AddVisitedLocation(const FVector& Location);
 	
-	void VisitHouse(AHouse* House);
 	void CleanUpSeenLoot();
+	
+	//House
+	const TMap<TObjectPtr<AHouse>, float>& GetVisitedHouses() const {return LastVisitedHouseTime;}
+	void MarkHouseVisited(AHouse* House);
+	float GetLastVisitedHouseTime(AHouse* House) const;
 	
 private:
 	
@@ -53,9 +55,7 @@ private:
 	
 	// Houses
 	UPROPERTY()
-	TSet<TObjectPtr<AHouse>> SeenHouses;
-	UPROPERTY()
-	TSet<TObjectPtr<AHouse>> VisitedHouses;
+	TMap<TObjectPtr<AHouse>, float> LastVisitedHouseTime;
 	
 	// Loot
 	TSet<TObjectPtr<ABaseItem>> SeenLoot;

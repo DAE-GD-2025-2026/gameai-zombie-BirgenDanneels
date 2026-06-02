@@ -41,9 +41,11 @@ EBTNodeResult::Type UBTT_PickUpLoot::ExecuteTask(UBehaviorTreeComponent& root, u
 		return EBTNodeResult::Failed;
 	}
 	
-	if (Survivor->GetComponentByClass<UInventoryComponent>()->GrabItem(TargetFreeSlot, TargetItem))
+	if (Inventory->GrabItem(TargetFreeSlot, TargetItem))
 	{
 		Blackboard->ClearValue("TargetItem");
+		Blackboard->SetValueAsFloat("ItemPickUpTime", GetWorld()->GetTimeSeconds());
+		
 		return EBTNodeResult::Succeeded;
 	}
 	

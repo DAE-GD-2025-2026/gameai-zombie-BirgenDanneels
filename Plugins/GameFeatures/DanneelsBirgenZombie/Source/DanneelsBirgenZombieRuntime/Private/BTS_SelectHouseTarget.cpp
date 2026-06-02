@@ -26,23 +26,24 @@ void UBTS_SelectHouseTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* 
 	UStudentPerceptor* Perceptor = Pawn->FindComponentByClass<UStudentPerceptor>();
 	if (!Perceptor) return;
 	
-	const TSet<TObjectPtr<AHouse>>& SeenHouses = Perceptor->GetSeenHouses();
-	const TSet<TObjectPtr<AHouse>>& VisitedHouses = Perceptor->GetVisitedHouses();
+	const auto& SeenHouses = Perceptor->GetVisitedHouses();
 	if (SeenHouses.Num() == 0) return;
 	
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 	if (!Blackboard) return;
 
-	// Pick a closest house
+	// Pick a closest house visited before last pickup time
+	float LastPickupTime = Blackboard->GetValueAsFloat("ItemPickUpTime");
 	AHouse* NewTarget = nullptr;
-
+	
 	float BestDist = FLT_MAX;
 
-	for (AHouse* House : SeenHouses)
+	for (const TPair<TObjectPtr<AHouse>, float>& HousePair : SeenHouses)
 	{
+		AHouse* House = HousePair.Key;
 		if (!House) continue;
-
-		if (VisitedHouses.Contains(House)) continue;
+		
+		if (HousePair.Value > LastPickupTime) continue; //Temporarily check if the value is 0 to know if it was never checked. This will be changed later
 		
 		float Dist = FVector::Dist(Pawn->GetActorLocation(), House->GetActorLocation());
 

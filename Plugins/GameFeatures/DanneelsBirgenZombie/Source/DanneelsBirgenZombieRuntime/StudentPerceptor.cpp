@@ -76,12 +76,11 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 		
 		if (AHouse* House = Cast<AHouse>(Actor)) //house
 		{
-			if (!SeenHouses.Contains(House))
+			if (!LastVisitedHouseTime.Contains(House))
 			{
-				SeenHouses.Add(House);
+				LastVisitedHouseTime.Add(House, 0.f);
 				
-				GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
-FString::Printf(TEXT("Saw house!")));
+				GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, "Saw new house!");
 			}
 		}
 		return;
@@ -115,12 +114,6 @@ void UStudentPerceptor::AddVisitedLocation(const FVector& Location)
 	RecentlyVisited.Add(Location);
 }
 
-void UStudentPerceptor::VisitHouse(AHouse* House)
-{
-	if (VisitedHouses.Contains(House)) return;
-	VisitedHouses.Add(House);
-}
-
 void UStudentPerceptor::CleanUpSeenLoot()
 {
 	for (auto It = SeenLoot.CreateIterator(); It; ++It)
@@ -132,6 +125,27 @@ void UStudentPerceptor::CleanUpSeenLoot()
 			It.RemoveCurrent();
 		}
 	}
+}
+
+void UStudentPerceptor::MarkHouseVisited(AHouse* House)
+{
+	if (!House || !GetWorld())
+	{
+		return;
+	}
+
+	LastVisitedHouseTime.FindOrAdd(House) = GetWorld()->GetTimeSeconds();	
+}
+
+float UStudentPerceptor::GetLastVisitedHouseTime(AHouse* House) const
+{
+	if (!House)
+		return 0.f;
+	
+	if (LastVisitedHouseTime.Contains(House))
+		return LastVisitedHouseTime[House];
+	
+	return 0.f;
 }
 
 void UStudentPerceptor::CleanUpSeenZombies()
