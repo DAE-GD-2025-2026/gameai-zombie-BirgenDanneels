@@ -19,7 +19,15 @@ void UEnvQueryContext_StrategicLootLocation::ProvideContext(FEnvQueryInstance& Q
 	
 	if (!BlackBoard) return;
 	
-	FVector location = BlackBoard->GetValueAsVector("StrategicLootLocation");
+	const FName KeyName = TEXT("StrategicLootLocation");
+
+	if (!BlackBoard->IsVectorValueSet(KeyName))
+	{
+		return;
+	}
+
+	const FVector Location = BlackBoard->GetValueAsVector(KeyName);
+
 	
-	UEnvQueryItemType_Point::SetContextHelper(ContextData, location);
+	UEnvQueryItemType_Point::SetContextHelper(ContextData, Location);
 }
