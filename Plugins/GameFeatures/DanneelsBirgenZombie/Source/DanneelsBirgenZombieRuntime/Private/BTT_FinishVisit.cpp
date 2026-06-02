@@ -22,8 +22,23 @@ EBTNodeResult::Type UBTT_FinishVisit::ExecuteTask(UBehaviorTreeComponent& root, 
 		
 	AHouse* House = Cast<AHouse>(Blackboard->GetValueAsObject("TargetHouse"));
 	if (!House) return EBTNodeResult::Failed;
-		
-	Perceptor->MarkHouseVisited(House);
 	
-	return EBTNodeResult::Succeeded;
+	const FHouseBounds Bounds = House->GetBounds();
+
+	const FVector PawnLocation = Pawn->GetActorLocation();
+
+	const bool bInsideBounds =
+		FMath::Abs(PawnLocation.X - Bounds.Origin.X) <= Bounds.Extent.X &&
+		FMath::Abs(PawnLocation.Y - Bounds.Origin.Y) <= Bounds.Extent.Y &&
+		FMath::Abs(PawnLocation.Z - Bounds.Origin.Z) <= Bounds.Extent.Z;
+	
+	if (bInsideBounds)
+	{
+		Perceptor->MarkHouseVisited(House);
+		Blackboard->ClearValue("TargetHouse");
+		
+		return EBTNodeResult::Succeeded;
+	}
+	
+	return EBTNodeResult::Failed;
 }

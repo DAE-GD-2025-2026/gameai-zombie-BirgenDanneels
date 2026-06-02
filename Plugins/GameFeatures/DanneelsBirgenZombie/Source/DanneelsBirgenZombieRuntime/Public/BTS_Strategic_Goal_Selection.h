@@ -25,6 +25,13 @@ private:
 		CommitState,
 	};
 	
+	enum class GoalType
+	{
+		House,
+		Cluster,
+	};
+	
+	GoalType CurrentGoalType = GoalType::Cluster;
 	GoalSelectionState CurrentState = GoalSelectionState::ScanState;
 	FVector CurrentClusterCenter = FVector::ZeroVector;
 	TArray<TObjectPtr<ABaseItem>> BestClusterCache;
@@ -34,4 +41,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Strategic Goal")
 	float ClusterRadius = 1000.f;
+	
+	// House Cache
+	float LastHouseSearchTime = 0.f;
 };

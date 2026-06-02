@@ -11,6 +11,7 @@
 #include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
 
 #include "DrawDebugHelpers.h"
+#include "Village/House/House.h"
 
 UBTS_Strategic_Goal_Selection::UBTS_Strategic_Goal_Selection()
 {
@@ -43,6 +44,7 @@ void UBTS_Strategic_Goal_Selection::ScanTick(UBehaviorTreeComponent& root)
     	return;
 	
 	BlackBoard->SetValueAsBool("CanLootDuringFlee", false);
+	BlackBoard->SetValueAsBool("SearchHouseWhileFlee", false);
 
     ASurvivorPawn* Survivor = Cast<ASurvivorPawn>(root.GetAIOwner()->GetPawn());
     if (!Survivor)
@@ -52,6 +54,7 @@ void UBTS_Strategic_Goal_Selection::ScanTick(UBehaviorTreeComponent& root)
     if (!Perceptor)
         return;
 
+	// Loot Logic
     const TSet<TObjectPtr<ABaseItem>>& SeenLoot =
         Perceptor->GetSeenLoot();
 
@@ -114,7 +117,7 @@ void UBTS_Strategic_Goal_Selection::ScanTick(UBehaviorTreeComponent& root)
         	BestCluster = CurrentCluster;
         }
     	else if (ClusterScore == BestScore && 
-    		UE::Geometry::Distance(CandidateLocation, Survivor->GetActorLocation()) > UE::Geometry::Distance(BestLocation, Survivor->GetActorLocation()))
+    		UE::Geometry::Distance(CandidateLocation, Survivor->GetActorLocation()) < UE::Geometry::Distance(BestLocation, Survivor->GetActorLocation()))
     	{
     		BestScore = ClusterScore;
     		BestLocation = CandidateLocation;
@@ -127,27 +130,43 @@ void UBTS_Strategic_Goal_Selection::ScanTick(UBehaviorTreeComponent& root)
     if (BestScore > 0)
     {
     	DrawDebugSphere(
-	GetWorld(),          // Current world context
-	BestLocation,        // The coordinate vector you just saved
-	50.0f,               // Radius of the sphere
-	12,                  // Segments (smoothness of the sphere)
-	FColor::Green,       // Color of the shape
-	false,               // Persistent lines (false = temporary)
-	2.0f,                // Lifetime in seconds (how long it stays visible)
-	0,                   // Depth priority
-	2.0f                 // Thickness of the lines
-);
+			GetWorld(),          // Current world context
+			BestLocation,        // The coordinate vector you just saved
+			50.0f,               // Radius of the sphere
+			12,                  // Segments (smoothness of the sphere)
+			FColor::Green,       // Color of the shape
+			false,               // Persistent lines (false = temporary)
+			2.0f,                // Lifetime in seconds (how long it stays visible)
+			0,                   // Depth priority
+			2.0f                 // Thickness of the lines
+			);
         BlackBoard->SetValueAsVector("StrategicLootLocation", BestLocation);
     	CurrentClusterCenter = BestLocation;
     	BestClusterCache = BestCluster;
     	CurrentState = GoalSelectionState::CommitState;
+    	CurrentGoalType = GoalType::Cluster;
+    	return;
     }
     else
     {
-    	BlackBoard->ClearValue("StrategicLootLocation");
     	CurrentClusterCenter = FVector::Zero();
     	BestClusterCache.Empty();
     }
+	
+	// House Logic
+	BlackBoard->SetValueAsBool("SearchHouseWhileFlee", false);
+	
+	if (AHouse* House = Cast<AHouse>(BlackBoard->GetValueAsObject("TargetHouse")))
+	{
+		LastHouseSearchTime = GetWorld()->GetTimeSeconds();
+		BlackBoard->SetValueAsVector("StrategicLootLocation", House->GetBounds().Origin);
+		CurrentState = GoalSelectionState::CommitState;
+		CurrentGoalType = GoalType::House;
+		return;
+	}
+	
+    BlackBoard->ClearValue("StrategicLootLocation");
+	
 }
 
 void UBTS_Strategic_Goal_Selection::CommitTick(UBehaviorTreeComponent& root)
@@ -164,21 +183,48 @@ void UBTS_Strategic_Goal_Selection::CommitTick(UBehaviorTreeComponent& root)
 	if (!Perceptor)
 		return;
 
-	const TSet<TObjectPtr<ABaseItem>>& SeenLoot =
-		Perceptor->GetSeenLoot();
 	
-	for (ABaseItem* Item : BestClusterCache)
+	switch (CurrentGoalType)
 	{
-		if (!SeenLoot.Contains(Item))
+		case GoalType::Cluster:
 		{
-			CurrentState = GoalSelectionState::ScanState;
-			BlackBoard->SetValueAsBool("CanLootDuringFlee", false);
-			return;
-		}
-	}
+			//Loot Logic
+			const TSet<TObjectPtr<ABaseItem>>& SeenLoot =
+				Perceptor->GetSeenLoot();
 	
-	if (UE::Geometry::Distance(CurrentClusterCenter, Survivor->GetActorLocation()) < ClusterRadius)
-	{
-		BlackBoard->SetValueAsBool("CanLootDuringFlee", true);
+			for (ABaseItem* Item : BestClusterCache)
+			{
+				if (!SeenLoot.Contains(Item))
+				{
+					CurrentState = GoalSelectionState::ScanState;
+					BlackBoard->SetValueAsBool("CanLootDuringFlee", false);
+					return;
+				}
+			}
+	
+			if (UE::Geometry::Distance(CurrentClusterCenter, Survivor->GetActorLocation()) < ClusterRadius)
+			{
+				BlackBoard->SetValueAsBool("CanLootDuringFlee", true);
+			}
+			break;
+		}
+		
+		case GoalType::House:
+		{
+			//House Logic
+			float NewLastHouseSearchTime = BlackBoard->GetValueAsFloat("LastHouseSearchTime");
+			if (LastHouseSearchTime < NewLastHouseSearchTime)
+			{
+				BlackBoard->SetValueAsBool("SearchHouseWhileFlee", false);
+				CurrentState = GoalSelectionState::ScanState;
+				return;
+			}
+			else
+			{
+				BlackBoard->SetValueAsBool("SearchHouseWhileFlee", true);
+			}
+		}
+			
+		break;
 	}
 }

@@ -134,7 +134,8 @@ void UStudentPerceptor::MarkHouseVisited(AHouse* House)
 		return;
 	}
 
-	LastVisitedHouseTime.FindOrAdd(House) = GetWorld()->GetTimeSeconds();	
+	LastVisitedHouseTime.FindOrAdd(House) = GetWorld()->GetTimeSeconds();
+	Blackboard->SetValueAsFloat("LastHouseSearchTime", GetWorld()->GetTimeSeconds());
 }
 
 float UStudentPerceptor::GetLastVisitedHouseTime(AHouse* House) const

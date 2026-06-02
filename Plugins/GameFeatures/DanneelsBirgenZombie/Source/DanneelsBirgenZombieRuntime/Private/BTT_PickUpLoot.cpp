@@ -46,6 +46,10 @@ EBTNodeResult::Type UBTT_PickUpLoot::ExecuteTask(UBehaviorTreeComponent& root, u
 		Blackboard->ClearValue("TargetItem");
 		Blackboard->SetValueAsFloat("ItemPickUpTime", GetWorld()->GetTimeSeconds());
 		
+		Blackboard->ClearValue("StrategicLootLocation");
+		Blackboard->ClearValue("TargetItemLocation");
+		Blackboard->SetValueAsBool("CanLootDuringFlee", false);
+		
 		return EBTNodeResult::Succeeded;
 	}
 	
