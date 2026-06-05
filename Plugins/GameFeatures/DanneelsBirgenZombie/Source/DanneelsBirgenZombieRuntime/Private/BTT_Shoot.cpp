@@ -5,11 +5,11 @@
 #include "Common/InventoryComponent.h"
 #include "Items/BaseItem.h"
 #include "Survivor/SurvivorPawn.h"
-#include "Zombies/BaseZombie.h"
 
 UBTT_Shoot::UBTT_Shoot()
 {
 	NodeName = "Shoot";
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
@@ -20,61 +20,64 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 	ASurvivorPawn* Survivor = Cast<ASurvivorPawn>(AIController->GetPawn());
 	if (!Survivor) return EBTNodeResult::Failed;
 
-	UBlackboardComponent* Blackboard = root.GetBlackboardComponent();
-	if (!Blackboard) return EBTNodeResult::Failed;
-	
-	ABaseItem* Weapon = Cast<ABaseItem>(Blackboard->GetValueAsObject(WeaponKey.SelectedKeyName));
-	if (!Weapon) return EBTNodeResult::Failed;
-	
-	const TArray<ABaseItem*>& InventoryArray = Survivor->GetComponentByClass<UInventoryComponent>()->GetInventory();
-	
-	// Aim at target
-	ABaseZombie* Target = Cast<ABaseZombie>(Blackboard->GetValueAsObject(TargetKey.SelectedKeyName));
-	if (!Target) return EBTNodeResult::Failed;
-	
-	// Get positions
-	const FVector TargetLocation = Target->GetActorLocation();
-	const FVector PawnLocation = Survivor->GetActorLocation();
+	UBlackboardComponent* BlackBoard = root.GetBlackboardComponent();
+	if (!BlackBoard) return EBTNodeResult::Failed;
 
-	// Aim direction
-	FVector AimDir = TargetLocation - PawnLocation;
-	AimDir.Z = 0.f;
-
-	AimDir = AimDir.GetSafeNormal();
-
-	if (AimDir.IsNearlyZero())
+	if (!BlackBoard->GetValueAsBool(ShouldShootKey.SelectedKeyName))
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	// Convert to rotation
-	FRotator DesiredRotation = AimDir.Rotation();
+	ABaseItem* Weapon = Cast<ABaseItem>(BlackBoard->GetValueAsObject(WeaponKey.SelectedKeyName));
+	if (!IsValid(Weapon)) return EBTNodeResult::Failed;
 
-	// Apply rotation
-	Survivor->SetActorRotation(DesiredRotation);
-	
-	// Shoot
-	Weapon->UseItem(*Survivor);
-	
-	int SlotIdx = GetItemSlot(InventoryArray, Weapon);
+	UInventoryComponent* Inventory = Survivor->FindComponentByClass<UInventoryComponent>();
+	if (!Inventory) return EBTNodeResult::Failed;
+
 	if (Weapon->GetValue() <= 0)
 	{
-		Survivor->GetComponentByClass<UInventoryComponent>()->RemoveItem(SlotIdx);
+		return EBTNodeResult::Failed;
 	}
-	
+
+	Weapon->UseItem(*Survivor);
+
+	if (Weapon->GetValue() <= 0)
+	{
+		const int32 SlotIdx = GetItemSlot(Inventory->GetInventory(), Weapon);
+
+		if (SlotIdx != -1)
+		{
+			Inventory->RemoveItem(SlotIdx);
+		}
+
+		BlackBoard->ClearValue(WeaponKey.SelectedKeyName);
+		BlackBoard->SetValueAsBool(ShouldShootKey.SelectedKeyName, false);
+	}
+
 	return EBTNodeResult::Succeeded;
+}
+
+void UBTT_Shoot::OnTaskFinished(UBehaviorTreeComponent& root, uint8* nodeMemory, EBTNodeResult::Type result)
+{
+	APawn* Pawn = Cast<APawn>(root.GetAIOwner()->GetPawn());
+	
+	if (Pawn)
+	{
+		Pawn->bUseControllerRotationYaw = true;
+	}
 }
 
 int UBTT_Shoot::GetItemSlot(const TArray<ABaseItem*>& Inventory, ABaseItem* SlotItem) const
 {
-	int SlotIdx = -1;
-	
-	for (ABaseItem* Item : Inventory)
+	for (int32 i = 0; i < Inventory.Num(); ++i)
 	{
-		++ SlotIdx;
-		if (Item == SlotItem)
-			return SlotIdx;
+		if (Inventory[i] == SlotItem)
+		{
+			return i;
+		}
 	}
-	
+
 	return -1;
 }
+
+
