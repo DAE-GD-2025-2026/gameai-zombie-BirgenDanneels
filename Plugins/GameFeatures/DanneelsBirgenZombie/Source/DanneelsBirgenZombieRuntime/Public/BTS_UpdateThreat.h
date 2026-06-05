@@ -6,7 +6,7 @@
 class AAIController;
 class UBlackboardComponent;
 class ABaseZombie;
-class UStudentPerceptor; // your perception component
+class UStudentPerceptor;
 
 UCLASS()
 class DANNEELSBIRGENZOMBIERUNTIME_API UBTS_UpdateThreat : public UBTService
