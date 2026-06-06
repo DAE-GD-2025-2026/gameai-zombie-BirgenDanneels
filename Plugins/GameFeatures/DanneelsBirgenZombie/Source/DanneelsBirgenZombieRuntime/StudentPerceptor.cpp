@@ -160,7 +160,7 @@ void UStudentPerceptor::CleanUpSeenZombies()
 
 		const float LastSeenTime = It.Value();
 		
-		if (!LastSeenTime || (Now - LastSeenTime > ZombieMemoryTime && LastSeenTime > 0.f) )
+		if (Now - LastSeenTime > ZombieMemoryTime && LastSeenTime > 0.f)
 		{
 			It.RemoveCurrent();
 			IsZombieArrayDirty = true;

@@ -55,8 +55,11 @@ void UBTS_CombatDecision::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemo
 	BlackBoard->SetValueAsBool(HasLineOfSightKey.SelectedKeyName, bLOS);
 	BlackBoard->SetValueAsBool(ShouldShootKey.SelectedKeyName, bLOS && BestWeapon != nullptr);
 	
-	const bool bShouldManualAim = bLOS && (bLOS && BestWeapon != nullptr);
-	Pawn->bUseControllerRotationYaw = !bShouldManualAim;
+	if (!root.GetBlackboardComponent()->GetValueAsBool("IsLookingBehind"))
+	{
+		const bool bShouldManualAim = bLOS && (bLOS && BestWeapon != nullptr);
+		Pawn->bUseControllerRotationYaw = !bShouldManualAim;
+	}
 }
 
 void UBTS_CombatDecision::OnCeaseRelevant(UBehaviorTreeComponent& root, uint8* nodeMemory)
