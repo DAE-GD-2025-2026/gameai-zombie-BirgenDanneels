@@ -147,9 +147,6 @@ void UStudentPerceptor::CleanUpSeenZombies()
 
 	const float Now = GetWorld()->GetTimeSeconds();
 	
-	if (IsZombieArrayDirty)
-		ResultZombieArray.Reset();
-	
 	for (auto It = ZombieLastSeenTimes.CreateIterator(); It; ++It)
 	{
 		ABaseZombie* Zombie = It.Key();
@@ -157,22 +154,34 @@ void UStudentPerceptor::CleanUpSeenZombies()
 		if (!IsValid(Zombie))
 		{
 			It.RemoveCurrent();
-			ZombieLastSeenTimes.Remove(Zombie);
+			IsZombieArrayDirty = true;
 			continue;
 		}
 
-		const float* LastSeenTime = ZombieLastSeenTimes.Find(Zombie);
+		const float LastSeenTime = It.Value();
 		
-		if (!LastSeenTime || (Now - *LastSeenTime > ZombieMemoryTime && *LastSeenTime > 0.f) )
+		if (!LastSeenTime || (Now - LastSeenTime > ZombieMemoryTime && LastSeenTime > 0.f) )
 		{
 			It.RemoveCurrent();
-			ZombieLastSeenTimes.Remove(Zombie);
+			IsZombieArrayDirty = true;
 			continue;
 		}
-		
-		if (IsZombieArrayDirty)
-			ResultZombieArray.Add(Zombie);
 	}
 	
-	IsZombieArrayDirty = false;
+	if (IsZombieArrayDirty)
+	{
+		ResultZombieArray.Reset();
+		
+		for (auto It = ZombieLastSeenTimes.CreateIterator(); It; ++It)
+		{
+			ABaseZombie* Zombie = It.Key();
+
+			if (IsValid(Zombie))
+			{
+				ResultZombieArray.Add(Zombie);
+			}
+		}
+		
+		IsZombieArrayDirty = false;
+	}
 }
