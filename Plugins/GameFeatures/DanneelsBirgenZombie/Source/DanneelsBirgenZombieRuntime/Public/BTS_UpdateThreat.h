@@ -21,8 +21,11 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere, Category="Threat")
-	float DangerRadius = 1500.f;
+	float StartFleeRadius = 1500.f;
 
+	UPROPERTY(EditAnywhere, Category="Threat")
+	float StopFleeRadius = 1800.f;
+	
 	UPROPERTY(EditAnywhere, Category="Threat")
 	float StartSprintRadius = 900.f;
 	

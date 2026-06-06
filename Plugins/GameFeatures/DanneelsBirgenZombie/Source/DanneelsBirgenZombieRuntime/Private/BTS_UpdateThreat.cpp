@@ -70,7 +70,19 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 	Blackboard->SetValueAsFloat("ZombieDistance", ZombieDistance);
 	
 	// Flee state
-	const bool bShouldFlee = ZombieDistance <= DangerRadius;
+	const bool bWasFleeing = Blackboard->GetValueAsBool("ShouldFlee");
+
+	bool bShouldFlee = bWasFleeing;
+
+	if (!bWasFleeing && ZombieDistance <= StartFleeRadius)
+	{
+		bShouldFlee = true;
+	}
+	else if (bWasFleeing && ZombieDistance >= StopFleeRadius)
+	{
+		bShouldFlee = false;
+	}
+
 	Blackboard->SetValueAsBool("ShouldFlee", bShouldFlee);
 	
 	// Sprint state
