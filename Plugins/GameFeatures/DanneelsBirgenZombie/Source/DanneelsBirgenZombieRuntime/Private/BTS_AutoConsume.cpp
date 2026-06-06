@@ -54,7 +54,7 @@ bool UBTS_AutoConsume::TryConsumeItem(ASurvivorPawn* Pawn, EItemType Type, int N
 		if (Item->GetItemType() != Type)
 			continue;
 
-		if (Item->GetValue() < NeededValue && (BestItem == nullptr || Item->GetValue() > BestItem->GetValue()))
+		if (Item->GetValue() <= NeededValue && (BestItem == nullptr || Item->GetValue() > BestItem->GetValue()))
 		{
 			BestItem = Item;
 			ItemSlotIdx = SlotIdx;

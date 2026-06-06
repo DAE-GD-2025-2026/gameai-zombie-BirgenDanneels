@@ -9,6 +9,7 @@ UBTT_LookBehind::UBTT_LookBehind()
 	NodeName = "Look Behind";
 
 	bNotifyTick = true;
+	bNotifyTaskFinished = true;
 	bCreateNodeInstance = true;
 }
 
