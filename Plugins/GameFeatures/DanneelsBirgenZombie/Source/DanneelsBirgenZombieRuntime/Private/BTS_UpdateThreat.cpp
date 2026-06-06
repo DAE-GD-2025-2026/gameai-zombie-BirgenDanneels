@@ -45,12 +45,12 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 
 	const FVector MyLocation = Pawn->GetActorLocation();
 	
-	const TSet<TObjectPtr<ABaseZombie>>& Zombies = Perceptor->GetZombiesSeen();
+	const TArray<ABaseZombie*>& Zombies = Perceptor->GetZombiesSeen();
 
 	float ClosestDistSq = TNumericLimits<float>::Max();
 	ABaseZombie* ClosestZombie = FindClosestZombie(Zombies, MyLocation, ClosestDistSq);
 
-	if (!ClosestZombie)
+	if (!ClosestZombie || !IsValid(ClosestZombie))
 	{
 		Blackboard->SetValueAsBool("ShouldFlee", false);
 		Blackboard->ClearValue("ClosestZombie");
@@ -110,11 +110,7 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 	}
 }
 
-ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(
-	const TSet<TObjectPtr<ABaseZombie>>& Zombies,
-	const FVector& MyLocation,
-	float& OutDistSq
-)
+ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(const TArray<ABaseZombie*>& Zombies, const FVector& MyLocation, float& OutDistSq)
 {
 	ABaseZombie* Closest = nullptr;
 	OutDistSq = TNumericLimits<float>::Max();

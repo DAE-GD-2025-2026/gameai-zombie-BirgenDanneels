@@ -20,7 +20,6 @@ class DANNEELSBIRGENZOMBIERUNTIME_API UStudentPerceptor : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	UStudentPerceptor();
 	
 	virtual void BeginPlay() override;
@@ -32,7 +31,7 @@ public:
 	
 	const TSet<TObjectPtr<ABaseItem>>& GetSeenLoot() const {return SeenLoot;}
 	
-	const TSet<TObjectPtr<ABaseZombie>>& GetZombiesSeen() const {return ZombiesSeen;}
+	const TArray<ABaseZombie*>& GetZombiesSeen() const {return ResultZombieArray;};
 	
 	const TArray<FVector>& GetRecentlyVisited() const {return RecentlyVisited;}
 	void AddVisitedLocation(const FVector& Location);
@@ -62,15 +61,14 @@ private:
 	
 	// Zombies
 	UPROPERTY()
-	TSet<TObjectPtr<ABaseZombie>> ZombiesSeen;
+	TMap<TObjectPtr<ABaseZombie>, float> ZombieLastSeenTimes;
+	TArray<TObjectPtr<ABaseZombie>> ResultZombieArray;
+	bool IsZombieArrayDirty = true;
 	
 	void CleanUpSeenZombies();
 
 	UPROPERTY()
 	float ZombieMemoryTime = 5.0f;
-
-	UPROPERTY()
-	TMap<TObjectPtr<ABaseZombie>, float> ZombieLastSeenTimes;
 	
 	// Visited Locations (make a task that adds to these locations, cap them and if cap is reached start removing the oldest ones)
 	TArray<FVector> RecentlyVisited;

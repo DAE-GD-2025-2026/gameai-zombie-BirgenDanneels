@@ -29,5 +29,5 @@ private:
 	UPROPERTY(EditAnywhere, Category="Threat")
 	float StopSprintRadius = 1300.f;
 
-	static ABaseZombie* FindClosestZombie(const TSet<TObjectPtr<ABaseZombie>>& Zombies, const FVector& MyLocation, float& OutDistSq);
+	static ABaseZombie* FindClosestZombie(const TArray<ABaseZombie*>& Zombies, const FVector& MyLocation, float& OutDistSq);
 };

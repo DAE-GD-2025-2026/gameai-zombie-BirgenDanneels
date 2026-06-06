@@ -20,11 +20,11 @@ void UEnvQueryContext_NearbyZombieLocations::ProvideContext(FEnvQueryInstance& Q
 	
 	TArray<FVector> ZombieLocations;
 
-	const TSet<TObjectPtr<ABaseZombie>>& ZombiesSeen = Comp->GetZombiesSeen();
+	const TArray<ABaseZombie*>& ZombiesSeen = Comp->GetZombiesSeen();
 
 	ZombieLocations.Reserve(ZombiesSeen.Num());
 
-	for (const TObjectPtr<ABaseZombie>& Zombie : ZombiesSeen)
+	for (const ABaseZombie* Zombie : ZombiesSeen)
 	{
 		if (IsValid(Zombie))
 		{

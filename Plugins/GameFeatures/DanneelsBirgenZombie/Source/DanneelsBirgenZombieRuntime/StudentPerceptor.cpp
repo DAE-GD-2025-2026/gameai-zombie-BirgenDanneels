@@ -3,13 +3,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 
 #include "AIController.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Zombies/BaseZombie.h"
-#include "Items/Food.h"
 #include "Items/Medkit.h"
-#include "Items/Pistol.h"
-#include "Items/Shotgun.h"
-#include "Navigation/PathFollowingComponent.h"
 #include "PurgeZones/PurgeZone.h"
 #include "Village/House/House.h"
 
@@ -58,12 +53,8 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	{
 		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
 		{
-			ZombiesSeen.Add(Zombie);
-
-			if (GetWorld())
-			{
-				ZombieLastSeenTimes.Add(Zombie, GetWorld()->GetTimeSeconds());
-			}
+			ZombieLastSeenTimes.Add(Zombie, -1.f);
+			IsZombieArrayDirty = true;
 		}
 	
 		if (ABaseItem* Item = Cast<ABaseItem>(Actor))
@@ -87,13 +78,14 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	}
 	else
 	{
-		 // if (ABaseItem* Item = Cast<ABaseItem>(Actor))
-		 // {
-		 // 	if (Item == Blackboard->GetValueAsObject(FName("TargetItem")))
-		 // 	{
-		 // 		Blackboard->ClearValue(FName("TargetItem"));
-		 // 	}
-		 // }
+		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
+		{
+			if (GetWorld())
+			{
+				ZombieLastSeenTimes.Add(Zombie, GetWorld()->GetTimeSeconds());
+				IsZombieArrayDirty = true;
+			}
+		}
 	}
 }
 
@@ -154,10 +146,13 @@ void UStudentPerceptor::CleanUpSeenZombies()
 	if (!GetWorld()) return;
 
 	const float Now = GetWorld()->GetTimeSeconds();
-
-	for (auto It = ZombiesSeen.CreateIterator(); It; ++It)
+	
+	if (IsZombieArrayDirty)
+		ResultZombieArray.Reset();
+	
+	for (auto It = ZombieLastSeenTimes.CreateIterator(); It; ++It)
 	{
-		ABaseZombie* Zombie = *It;
+		ABaseZombie* Zombie = It.Key();
 
 		if (!IsValid(Zombie))
 		{
@@ -167,11 +162,17 @@ void UStudentPerceptor::CleanUpSeenZombies()
 		}
 
 		const float* LastSeenTime = ZombieLastSeenTimes.Find(Zombie);
-
-		if (!LastSeenTime || Now - *LastSeenTime > ZombieMemoryTime)
+		
+		if (!LastSeenTime || (Now - *LastSeenTime > ZombieMemoryTime && *LastSeenTime > 0.f) )
 		{
 			It.RemoveCurrent();
 			ZombieLastSeenTimes.Remove(Zombie);
+			continue;
 		}
+		
+		if (IsZombieArrayDirty)
+			ResultZombieArray.Add(Zombie);
 	}
+	
+	IsZombieArrayDirty = false;
 }
