@@ -54,22 +54,16 @@ void UBTS_CombatDecision::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemo
 	BlackBoard->SetValueAsObject(WeaponKey.SelectedKeyName, BestWeapon);
 	BlackBoard->SetValueAsBool(HasLineOfSightKey.SelectedKeyName, bLOS);
 	BlackBoard->SetValueAsBool(ShouldShootKey.SelectedKeyName, bLOS && BestWeapon != nullptr);
-	
-	if (!root.GetBlackboardComponent()->GetValueAsBool("IsLookingBehind"))
-	{
-		const bool bShouldManualAim = bLOS && (bLOS && BestWeapon != nullptr);
-		Pawn->bUseControllerRotationYaw = !bShouldManualAim;
-	}
 }
 
 void UBTS_CombatDecision::OnCeaseRelevant(UBehaviorTreeComponent& root, uint8* nodeMemory)
 {
 	Super::OnCeaseRelevant(root, nodeMemory);
 	
-	APawn* Pawn = root.GetAIOwner() ? root.GetAIOwner()->GetPawn() : nullptr;
-	if (!Pawn) return;
+	AAIController* AIController = root.GetAIOwner();
+	if (!AIController) return;
 
-	Pawn->bUseControllerRotationYaw = true;
+	AIController->ClearFocus(EAIFocusPriority::Gameplay);
 }
 
 //Finds closest target

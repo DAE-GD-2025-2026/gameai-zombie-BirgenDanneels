@@ -17,16 +17,12 @@ EBTNodeResult::Type UBTT_LookBehind::ExecuteTask(UBehaviorTreeComponent& root,ui
 {
 	AAIController* AIController = root.GetAIOwner();
 	if (!AIController) return EBTNodeResult::Failed;
-
+	
 	APawn* Pawn = AIController->GetPawn();
 	if (!Pawn || !Pawn->GetWorld()) return EBTNodeResult::Failed;
 
 	root.GetBlackboardComponent()->SetValueAsBool("IsLookingBehind", true);
-
-	Pawn->bUseControllerRotationYaw = false;
-
-	const FVector Forward = Pawn->GetActorForwardVector();
-
+	
 	HoldEndTime = Pawn->GetWorld()->GetTimeSeconds() + HoldTime;
 	State = ELookBehindState::LookingBehind;
 
@@ -48,7 +44,7 @@ void UBTT_LookBehind::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMem
 		FinishLatentTask(ownerComp, EBTNodeResult::Failed);
 		return;
 	}
-
+	
 	switch (State)
 	{
 	case ELookBehindState::LookingBehind:
@@ -80,14 +76,11 @@ void UBTT_LookBehind::TickTask(UBehaviorTreeComponent& ownerComp, uint8* nodeMem
 
 EBTNodeResult::Type UBTT_LookBehind::AbortTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
 {
-	if (APawn* Pawn = root.GetAIOwner()->GetPawn())
+	if (AAIController* AIController = root.GetAIOwner())
 	{
-		FRotator Rotation = Pawn->GetActorRotation();
-		Pawn->SetActorRotation(Rotation);
-		
-		Pawn->bUseControllerRotationYaw = false;
+		AIController->ClearFocus(EAIFocusPriority::Gameplay);
 	}
-	
+
 	root.GetBlackboardComponent()->SetValueAsBool("IsLookingBehind", false);
 
 	return EBTNodeResult::Aborted;
@@ -97,11 +90,11 @@ void UBTT_LookBehind::OnTaskFinished(UBehaviorTreeComponent& root, uint8* nodeMe
 {
 	Super::OnTaskFinished(root, nodeMemory, taskResult);
 	
-	if (APawn* Pawn = root.GetAIOwner()->GetPawn())
+	if (AAIController* AIController = root.GetAIOwner())
 	{
-		Pawn->bUseControllerRotationYaw = false;
+		AIController->ClearFocus(EAIFocusPriority::Gameplay);
 	}
-	
+
 	root.GetBlackboardComponent()->SetValueAsBool("IsLookingBehind", false);
 }
 
@@ -110,14 +103,20 @@ bool UBTT_LookBehind::RotatePawnTowards(APawn* Pawn, float DesiredYaw, float Del
 	if (!Pawn)
 		return true;
 
-	const FRotator Current = Pawn->GetActorRotation();
+	AAIController* AIController = Pawn->GetController<AAIController>();
+	if (!AIController)
+		return true;
 
-	FRotator Target = Current;
-	Target.Yaw = DesiredYaw;
+	// Do not let MoveTo focus own rotation.
+	AIController->ClearFocus(EAIFocusPriority::Move);
 
-	const FRotator NewRotation = FMath::RInterpConstantTo(Current, Target,DeltaSeconds, RotationSpeed * 360.f);
-
-	Pawn->SetActorRotation(NewRotation);
+	const FRotator Current = AIController->GetControlRotation();
+	FRotator Target = {0, DesiredYaw, 0};
+	
+	const FRotator NewRotation = FMath::RInterpConstantTo(Current, Target, DeltaSeconds, RotationSpeed * 360.f);
+	const FVector LookPoint = Pawn->GetActorLocation() + NewRotation.Vector() * 10000.f;
+	
+	AIController->SetFocalPoint(LookPoint, EAIFocusPriority::Gameplay);
 
 	return FMath::Abs(FMath::FindDeltaAngleDegrees(NewRotation.Yaw, DesiredYaw)) < 1.f;
 }

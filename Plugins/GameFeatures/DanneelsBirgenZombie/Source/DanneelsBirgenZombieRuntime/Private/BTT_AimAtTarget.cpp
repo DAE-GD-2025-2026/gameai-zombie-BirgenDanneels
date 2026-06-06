@@ -19,14 +19,27 @@ EBTNodeResult::Type UBTT_AimAtTarget::ExecuteTask(UBehaviorTreeComponent& root, 
 
 void UBTT_AimAtTarget::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, float DeltaSeconds)
 {
-	APawn* Pawn = root.GetAIOwner()->GetPawn();
-	if (!Pawn)
+	AAIController* AIController = root.GetAIOwner();
+	if (!AIController)
+	{
 		FinishLatentTask(root, EBTNodeResult::Failed);
-	
+		return;
+	}
+
+	APawn* Pawn = AIController->GetPawn();
+	if (!Pawn)
+	{
+		FinishLatentTask(root, EBTNodeResult::Failed);
+		return;
+	}
+
 	UBlackboardComponent* BlackBoard = root.GetBlackboardComponent();
 	if (!BlackBoard)
+	{
 		FinishLatentTask(root, EBTNodeResult::Failed);
-	
+		return;
+	}
+
 	ABaseZombie* Target = Cast<ABaseZombie>(BlackBoard->GetValueAsObject(TargetKey.SelectedKeyName));
 	if (!IsValid(Target))
 	{
@@ -43,15 +56,25 @@ void UBTT_AimAtTarget::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory,
 		return;
 	}
 
-	const FRotator DesiredRotation = Direction.Rotation();
-	const FRotator CurrentRotation = Pawn->GetActorRotation();
+	FRotator DesiredRotation = Direction.Rotation();
+	DesiredRotation.Pitch = 0.f;
+	DesiredRotation.Roll = 0.f;
 
-	const FRotator NewRotation = FMath::RInterpTo(CurrentRotation,DesiredRotation,DeltaSeconds,AimRotationSpeed);
+	const FRotator CurrentRotation = AIController->GetControlRotation();
+
+	const FRotator NewRotation = FMath::RInterpTo(CurrentRotation, DesiredRotation, DeltaSeconds, AimRotationSpeed);
+
+	const FVector LookPoint = Pawn->GetActorLocation() + NewRotation.Vector() * 10000.f;
+
+	// Do not let MoveTo focus own rotation.
+	AIController->ClearFocus(EAIFocusPriority::Move);
 	
-	Pawn->SetActorRotation(NewRotation);
+	AIController->SetFocalPoint(LookPoint, EAIFocusPriority::Gameplay);
 
-	const float AngleDiff = FMath::Abs(FMath::FindDeltaAngleDegrees(Pawn->GetActorRotation().Yaw,DesiredRotation.Yaw));
+	const float AngleDiff = FMath::Abs(FMath::FindDeltaAngleDegrees(NewRotation.Yaw, DesiredRotation.Yaw));
 
 	if (AngleDiff <= AcceptableAngle)
+	{
 		FinishLatentTask(root, EBTNodeResult::Succeeded);
+	}
 }
