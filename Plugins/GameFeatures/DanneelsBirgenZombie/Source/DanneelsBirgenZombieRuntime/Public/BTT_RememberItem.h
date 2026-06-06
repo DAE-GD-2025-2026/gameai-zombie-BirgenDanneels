@@ -16,4 +16,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector ItemLocationKey;
+
+private:
+	
+	bool IsLocationReachable(APawn* Pawn, const FVector& Location) const;
+	bool FindReachableLocationNearItem(APawn* Pawn, const FVector& ItemLocation, FVector& OutLocation) const;
 };
