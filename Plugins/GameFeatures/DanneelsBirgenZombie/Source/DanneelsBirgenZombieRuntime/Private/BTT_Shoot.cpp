@@ -57,16 +57,6 @@ EBTNodeResult::Type UBTT_Shoot::ExecuteTask(UBehaviorTreeComponent& root, uint8*
 	return EBTNodeResult::Succeeded;
 }
 
-void UBTT_Shoot::OnTaskFinished(UBehaviorTreeComponent& root, uint8* nodeMemory, EBTNodeResult::Type result)
-{
-	APawn* Pawn = Cast<APawn>(root.GetAIOwner()->GetPawn());
-	
-	if (Pawn)
-	{
-		Pawn->bUseControllerRotationYaw = true;
-	}
-}
-
 int UBTT_Shoot::GetItemSlot(const TArray<ABaseItem*>& Inventory, ABaseItem* SlotItem) const
 {
 	for (int32 i = 0; i < Inventory.Num(); ++i)

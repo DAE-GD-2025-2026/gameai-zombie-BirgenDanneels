@@ -16,6 +16,7 @@ UBTS_CombatDecision::UBTS_CombatDecision()
 
 	Interval = 0.20f;
 	RandomDeviation = 0.05f;
+	bNotifyCeaseRelevant = true;
 }
 
 void UBTS_CombatDecision::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory, float deltaSeconds)
@@ -54,8 +55,18 @@ void UBTS_CombatDecision::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemo
 	BlackBoard->SetValueAsBool(HasLineOfSightKey.SelectedKeyName, bLOS);
 	BlackBoard->SetValueAsBool(ShouldShootKey.SelectedKeyName, bLOS && BestWeapon != nullptr);
 	
-	if (!bLOS)
-		Pawn->bUseControllerRotationYaw = true;
+	const bool bShouldManualAim = bLOS && (bLOS && BestWeapon != nullptr);
+	Pawn->bUseControllerRotationYaw = !bShouldManualAim;
+}
+
+void UBTS_CombatDecision::OnCeaseRelevant(UBehaviorTreeComponent& root, uint8* nodeMemory)
+{
+	Super::OnCeaseRelevant(root, nodeMemory);
+	
+	APawn* Pawn = root.GetAIOwner() ? root.GetAIOwner()->GetPawn() : nullptr;
+	if (!Pawn) return;
+
+	Pawn->bUseControllerRotationYaw = true;
 }
 
 //Finds closest target

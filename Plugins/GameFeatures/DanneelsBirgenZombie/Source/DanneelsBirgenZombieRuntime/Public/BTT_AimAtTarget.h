@@ -16,8 +16,6 @@ public:
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
 	virtual void TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, float DeltaSeconds) override;
-	virtual void OnTaskFinished(UBehaviorTreeComponent& root, uint8* nodeMemory, EBTNodeResult::Type result) override;
-	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& root, uint8* nodeMemory) override;
 	
 	UPROPERTY(EditAnywhere)
 	FBlackboardKeySelector TargetKey;
@@ -27,9 +25,5 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float AcceptableAngle = 1.f;
-	
-private:
-	APawn* Pawn;
-	UBlackboardComponent* BB;
 	
 };

@@ -14,26 +14,20 @@ UBTT_AimAtTarget::UBTT_AimAtTarget()
 
 EBTNodeResult::Type UBTT_AimAtTarget::ExecuteTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
 {
-	AAIController* AIController = root.GetAIOwner();
-	if (!AIController)
-		return EBTNodeResult::Failed;
-
-	Pawn = AIController->GetPawn();
-	if (!Pawn)
-		return EBTNodeResult::Failed;
-	
-	BB = root.GetBlackboardComponent();
-	if (!BB)
-		return EBTNodeResult::Failed;
-	
-	Pawn->bUseControllerRotationYaw = false;
-	
 	return EBTNodeResult::InProgress;
 }
 
 void UBTT_AimAtTarget::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory, float DeltaSeconds)
 {
-	ABaseZombie* Target = Cast<ABaseZombie>(BB->GetValueAsObject(TargetKey.SelectedKeyName));
+	APawn* Pawn = root.GetAIOwner()->GetPawn();
+	if (!Pawn)
+		FinishLatentTask(root, EBTNodeResult::Failed);
+	
+	UBlackboardComponent* BlackBoard = root.GetBlackboardComponent();
+	if (!BlackBoard)
+		FinishLatentTask(root, EBTNodeResult::Failed);
+	
+	ABaseZombie* Target = Cast<ABaseZombie>(BlackBoard->GetValueAsObject(TargetKey.SelectedKeyName));
 	if (!IsValid(Target))
 	{
 		FinishLatentTask(root, EBTNodeResult::Failed);
@@ -60,22 +54,4 @@ void UBTT_AimAtTarget::TickTask(UBehaviorTreeComponent& root, uint8* nodeMemory,
 
 	if (AngleDiff <= AcceptableAngle)
 		FinishLatentTask(root, EBTNodeResult::Succeeded);
-}
-
-void UBTT_AimAtTarget::OnTaskFinished(UBehaviorTreeComponent& root, uint8* nodeMemory, EBTNodeResult::Type result)
-{
-	if (result != EBTNodeResult::Succeeded && Pawn)
-	{
-		Pawn->bUseControllerRotationYaw = true;
-	}
-}
-
-EBTNodeResult::Type UBTT_AimAtTarget::AbortTask(UBehaviorTreeComponent& root, uint8* nodeMemory)
-{
-	if (Pawn)
-	{
-		Pawn->bUseControllerRotationYaw = true;
-	}
-	
-	return Super::AbortTask(root, nodeMemory);
 }
