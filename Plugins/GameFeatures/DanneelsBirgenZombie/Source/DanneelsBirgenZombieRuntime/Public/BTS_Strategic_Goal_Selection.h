@@ -42,6 +42,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Strategic Goal")
 	float ClusterRadius = 1000.f;
 	
+	UPROPERTY(EditAnywhere, Category="Strategic Goal")
+	float LootRadius = 100.f;
+	
 	// House Cache
 	float LastHouseSearchTime = 0.f;
 };

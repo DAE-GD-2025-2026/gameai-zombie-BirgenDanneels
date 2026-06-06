@@ -202,7 +202,7 @@ void UBTS_Strategic_Goal_Selection::CommitTick(UBehaviorTreeComponent& root)
 				}
 			}
 	
-			if (UE::Geometry::Distance(CurrentClusterCenter, Survivor->GetActorLocation()) < ClusterRadius)
+			if (UE::Geometry::Distance(CurrentClusterCenter, Survivor->GetActorLocation()) < LootRadius)
 			{
 				BlackBoard->SetValueAsBool("CanLootDuringFlee", true);
 			}
