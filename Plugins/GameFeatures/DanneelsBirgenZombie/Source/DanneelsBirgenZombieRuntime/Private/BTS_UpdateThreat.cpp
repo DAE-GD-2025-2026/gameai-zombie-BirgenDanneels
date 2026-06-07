@@ -103,23 +103,6 @@ void UBTS_UpdateThreat::TickNode(UBehaviorTreeComponent& root, uint8* nodeMemory
 			}
 		}
 	}
-
-	if (GEngine)
-	{
-		const FString DebugText = FString::Printf(
-			TEXT("Zombie Dist: %.0f | Flee: %s | Running: %s"),
-			ZombieDistance,
-			bShouldFlee ? TEXT("true") : TEXT("false"),
-			Survivor && Survivor->IsRunning() ? TEXT("true") : TEXT("false")
-		);
-
-		GEngine->AddOnScreenDebugMessage(
-			5,
-			0.25f,
-			bShouldFlee ? FColor::Red : FColor::Yellow,
-			DebugText
-		);
-	}
 }
 
 ABaseZombie* UBTS_UpdateThreat::FindClosestZombie(const TArray<ABaseZombie*>& Zombies, const FVector& MyLocation, float& OutDistSq)

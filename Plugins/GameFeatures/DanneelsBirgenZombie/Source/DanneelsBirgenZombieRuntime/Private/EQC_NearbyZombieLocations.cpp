@@ -32,7 +32,5 @@ void UEnvQueryContext_NearbyZombieLocations::ProvideContext(FEnvQueryInstance& Q
 		}
 	}
 	
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("Found %d zombies to query"), ZombieLocations.Num()));
-	
 	UEnvQueryItemType_Point::SetContextHelper(ContextData, ZombieLocations);
 }

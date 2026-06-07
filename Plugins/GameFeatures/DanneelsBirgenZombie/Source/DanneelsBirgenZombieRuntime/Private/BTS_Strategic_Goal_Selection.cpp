@@ -129,17 +129,6 @@ void UBTS_Strategic_Goal_Selection::ScanTick(UBehaviorTreeComponent& root)
 
     if (BestScore > 0)
     {
-    	DrawDebugSphere(
-			GetWorld(),          // Current world context
-			BestLocation,        // The coordinate vector you just saved
-			50.0f,               // Radius of the sphere
-			12,                  // Segments (smoothness of the sphere)
-			FColor::Green,       // Color of the shape
-			false,               // Persistent lines (false = temporary)
-			2.0f,                // Lifetime in seconds (how long it stays visible)
-			0,                   // Depth priority
-			2.0f                 // Thickness of the lines
-			);
         BlackBoard->SetValueAsVector("StrategicLootLocation", BestLocation);
     	CurrentClusterCenter = BestLocation;
     	BestClusterCache = BestCluster;

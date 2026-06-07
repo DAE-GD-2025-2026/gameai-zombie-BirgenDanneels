@@ -43,8 +43,7 @@ EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root,
 	int ShotgunNeed = Blackboard->GetValueAsInt("ShotgunNeed");
 	int MedkitNeed = Blackboard->GetValueAsInt("MedkitStockNeed");
 	int FoodNeed = Blackboard->GetValueAsInt("FoodStockNeed");
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("PistolNeed: %d, ShotgunNeed: %d, MedkitNeed: %d, FoodNeed: %d"), PistoldNeed, ShotgunNeed, MedkitNeed, FoodNeed));
-	
+		
 	TObjectPtr<ABaseItem> TargetItem = nullptr;
 	float Distance = TNumericLimits<float>::Max();
 	

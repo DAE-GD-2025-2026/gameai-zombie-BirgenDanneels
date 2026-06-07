@@ -229,26 +229,26 @@ void UDiscoveryComponent::DebugDrawGrid(float Duration) const
 			Color = FColor::Red;
 		}
 
-		DrawDebugBox(
-			World,
-			Center,
-			Extent,
-			Color,
-			false,
-			Duration,
-			0,
-			2.f
-		);
-
-		const float Score = GetDiscoveryScoreAt(GridToWorld(Cell));
-
-		DrawDebugString(
-			World,
-			Center + FVector(0.f, 0.f, 30.f),
-			FString::Printf(TEXT("%.2f"), Score),
-			nullptr,
-			Color,
-			Duration
-		);
+		// DrawDebugBox(
+		// 	World,
+		// 	Center,
+		// 	Extent,
+		// 	Color,
+		// 	false,
+		// 	Duration,
+		// 	0,
+		// 	2.f
+		// );
+		//
+		// const float Score = GetDiscoveryScoreAt(GridToWorld(Cell));
+		//
+		// DrawDebugString(
+		// 	World,
+		// 	Center + FVector(0.f, 0.f, 30.f),
+		// 	FString::Printf(TEXT("%.2f"), Score),
+		// 	nullptr,
+		// 	Color,
+		// 	Duration
+		// );
 	}
 }

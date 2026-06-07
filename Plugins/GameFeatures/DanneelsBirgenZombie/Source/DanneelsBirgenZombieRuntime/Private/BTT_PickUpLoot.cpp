@@ -34,7 +34,6 @@ EBTNodeResult::Type UBTT_PickUpLoot::ExecuteTask(UBehaviorTreeComponent& root, u
 	const TArray<ABaseItem*>& InventoryArray = Inventory->GetInventory();
 	int TargetFreeSlot = GetFreeInventorySlot(InventoryArray);
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("TargetFreeSlot: %d"), TargetFreeSlot));
 	if (TargetFreeSlot == -1) //inventory full (should be done by a service)
 	{
 		Blackboard->ClearValue("TargetItem");

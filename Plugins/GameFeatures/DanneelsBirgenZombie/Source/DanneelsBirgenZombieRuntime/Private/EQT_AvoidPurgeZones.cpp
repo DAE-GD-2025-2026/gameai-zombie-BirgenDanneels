@@ -44,10 +44,6 @@ void UEnvQueryTest_AvoidPurgeZones::RunTest(FEnvQueryInstance& QueryInstance) co
 
 	TArray<APurgeZone*> PurgeZones = Perceptor->GetPurgeZones();
 	
-	const FString DebugText = FString::Printf(
-	TEXT("Purge zones: %i"), PurgeZones.Num());
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, DebugText);
-	
 	if (PurgeZones.Num() == 0)
 	{
 		for (FEnvQueryInstance::ItemIterator It(this, QueryInstance); It; ++It)
