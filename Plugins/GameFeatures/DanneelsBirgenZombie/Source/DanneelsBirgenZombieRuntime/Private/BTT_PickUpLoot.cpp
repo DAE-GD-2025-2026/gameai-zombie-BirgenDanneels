@@ -43,6 +43,10 @@ EBTNodeResult::Type UBTT_PickUpLoot::ExecuteTask(UBehaviorTreeComponent& root, u
 	
 	if (Inventory->GrabItem(TargetFreeSlot, TargetItem))
 	{
+		//If garbage drop it again
+		if (TargetItem->GetItemType() == EItemType::Garbage)
+			Inventory->RemoveItem(TargetFreeSlot);
+		
 		Blackboard->ClearValue("TargetItem");
 		Blackboard->SetValueAsFloat("ItemPickUpTime", GetWorld()->GetTimeSeconds());
 		

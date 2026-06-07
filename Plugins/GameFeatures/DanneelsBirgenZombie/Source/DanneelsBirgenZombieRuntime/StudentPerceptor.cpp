@@ -59,10 +59,8 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	
 		if (ABaseItem* Item = Cast<ABaseItem>(Actor))
 		{
-			if (Item->GetItemType() != EItemType::Garbage)
-			{
-				SeenLoot.Add(Item);
-			}
+			SeenLoot.Add(Item);
+			
 			return;
 		}
 		
@@ -78,7 +76,6 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 		if (APurgeZone* PurgeZone = Cast<APurgeZone>(Actor))
 		{
 			PurgeZoneMemory.Add(PurgeZone, -1.f);
-			GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, "Saw new purge zone!");
 			return;
 		}
 	}

@@ -4,6 +4,7 @@
 #include "Items/BaseItem.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "Common/InventoryComponent.h"
 #include "DanneelsBirgenZombieRuntime/StudentPerceptor.h"
 
 UBTT_RememberItem::UBTT_RememberItem()
@@ -21,6 +22,20 @@ EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root,
 	
 	UStudentPerceptor *Perceptor = Pawn->FindComponentByClass<UStudentPerceptor>();
 	if (!Perceptor) return EBTNodeResult::Failed;
+	
+	UInventoryComponent* Inventory = Pawn->GetComponentByClass<UInventoryComponent>();
+	if (!Inventory) return EBTNodeResult::Failed;
+	
+	//Check if inventory is full
+	int FreeSlots = 0;
+	for (int slot{0}; slot < Inventory->GetInventoryCapacity(); ++slot)
+	{
+		if (Inventory->GetInventory()[slot] == nullptr)
+			++FreeSlots;
+	}
+	
+	if (FreeSlots == 0)
+		return EBTNodeResult::Failed;
 	
 	Perceptor->CleanUpSeenLoot();
 	
@@ -41,6 +56,16 @@ EBTNodeResult::Type UBTT_RememberItem::ExecuteTask(UBehaviorTreeComponent& root,
 		|| FoodNeed > 0 && Item->GetItemType() == EItemType::Food;
 		
 		if (FitsNeeds)
+		{
+			float ItemDistance = (Pawn->GetActorLocation() - Item->GetActorLocation()).Size();
+			if (ItemDistance < Distance)
+			{
+				TargetItem = Item;
+				Distance = ItemDistance;
+			}
+		}
+		
+		if (CanFlipTrash && Item->GetItemType() == EItemType::Garbage)
 		{
 			float ItemDistance = (Pawn->GetActorLocation() - Item->GetActorLocation()).Size();
 			if (ItemDistance < Distance)
