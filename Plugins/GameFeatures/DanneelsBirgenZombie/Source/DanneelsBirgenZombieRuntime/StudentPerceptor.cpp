@@ -53,8 +53,8 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 	{
 		if (ABaseZombie* Zombie = Cast<ABaseZombie>(Actor))
 		{
-			ZombieLastSeenTimes.Add(Zombie, -1.f);
-			IsZombieArrayDirty = true;
+			ZombieMemory.Add(Zombie, -1.f);
+			return;
 		}
 	
 		if (ABaseItem* Item = Cast<ABaseItem>(Actor))
@@ -63,18 +63,24 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 			{
 				SeenLoot.Add(Item);
 			}
+			return;
 		}
 		
-		if (AHouse* House = Cast<AHouse>(Actor)) //house
+		if (AHouse* House = Cast<AHouse>(Actor))
 		{
 			if (!LastVisitedHouseTime.Contains(House))
 			{
 				LastVisitedHouseTime.Add(House, 0.f);
-				
-				GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, "Saw new house!");
 			}
+			return;
 		}
-		return;
+		
+		if (APurgeZone* PurgeZone = Cast<APurgeZone>(Actor))
+		{
+			PurgeZoneMemory.Add(PurgeZone, -1.f);
+			GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, "Saw new purge zone!");
+			return;
+		}
 	}
 	else
 	{
@@ -82,9 +88,15 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 		{
 			if (GetWorld())
 			{
-				ZombieLastSeenTimes.Add(Zombie, GetWorld()->GetTimeSeconds());
-				IsZombieArrayDirty = true;
+				ZombieMemory.Add(Zombie, GetWorld()->GetTimeSeconds());
 			}
+			return;
+		}
+		
+		if (APurgeZone* PurgeZone = Cast<APurgeZone>(Actor))
+		{
+			PurgeZoneMemory.Add(PurgeZone, GetWorld()->GetTimeSeconds());
+			return;
 		}
 	}
 }
@@ -93,17 +105,8 @@ void UStudentPerceptor::TickComponent(float DeltaTime, ELevelTick TickType,	FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	CleanUpSeenZombies();
-}
-
-void UStudentPerceptor::AddVisitedLocation(const FVector& Location)
-{
-	if (RecentlyVisited.Num() > 10)
-	{
-		RecentlyVisited.RemoveAt(0);
-	}
-	
-	RecentlyVisited.Add(Location);
+	CleanUpArray(ZombieMemory);
+	CleanUpArray(PurgeZoneMemory);
 }
 
 void UStudentPerceptor::CleanUpSeenLoot()
@@ -139,49 +142,4 @@ float UStudentPerceptor::GetLastVisitedHouseTime(AHouse* House) const
 		return LastVisitedHouseTime[House];
 	
 	return 0.f;
-}
-
-void UStudentPerceptor::CleanUpSeenZombies()
-{
-	if (!GetWorld()) return;
-
-	const float Now = GetWorld()->GetTimeSeconds();
-	
-	for (auto It = ZombieLastSeenTimes.CreateIterator(); It; ++It)
-	{
-		ABaseZombie* Zombie = It.Key();
-
-		if (!IsValid(Zombie))
-		{
-			It.RemoveCurrent();
-			IsZombieArrayDirty = true;
-			continue;
-		}
-
-		const float LastSeenTime = It.Value();
-		
-		if (Now - LastSeenTime > ZombieMemoryTime && LastSeenTime > 0.f)
-		{
-			It.RemoveCurrent();
-			IsZombieArrayDirty = true;
-			continue;
-		}
-	}
-	
-	if (IsZombieArrayDirty)
-	{
-		ResultZombieArray.Reset();
-		
-		for (auto It = ZombieLastSeenTimes.CreateIterator(); It; ++It)
-		{
-			ABaseZombie* Zombie = It.Key();
-
-			if (IsValid(Zombie))
-			{
-				ResultZombieArray.Add(Zombie);
-			}
-		}
-		
-		IsZombieArrayDirty = false;
-	}
 }
