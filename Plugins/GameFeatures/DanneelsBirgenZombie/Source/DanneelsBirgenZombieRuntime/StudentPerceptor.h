@@ -33,7 +33,6 @@ public:
 	
 	const TArray<ABaseZombie*>& GetZombiesSeen() const {return ResultZombieArray;};
 	
-	const TArray<FVector>& GetRecentlyVisited() const {return RecentlyVisited;}
 	void AddVisitedLocation(const FVector& Location);
 	
 	void CleanUpSeenLoot();
@@ -70,6 +69,4 @@ private:
 	UPROPERTY()
 	float ZombieMemoryTime = 5.0f;
 	
-	// Visited Locations (make a task that adds to these locations, cap them and if cap is reached start removing the oldest ones)
-	TArray<FVector> RecentlyVisited;
 };
